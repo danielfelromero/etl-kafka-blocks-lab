@@ -1,7 +1,8 @@
-import * as Blockly from "blockly";
+import * as Blockly from "blockly/core";
 
 export function registerKafkaBlocks() {
-  Blockly.Blocks["lab_kafka_setup"] = {
+  const definitions = {
+    lab_kafka_setup: {
     init() {
       this.appendDummyInput()
         .appendField("Configurar productor Kafka")
@@ -12,9 +13,9 @@ export function registerKafkaBlocks() {
       this.setTooltip("Define el broker al que se conectará el productor.");
       this.setHelpUrl("https://docs.confluent.io/kafka-clients/python/current/overview.html");
     },
-  };
+    },
 
-  Blockly.Blocks["lab_event"] = {
+    lab_event: {
     init() {
       this.appendDummyInput().appendField("Crear medición")
         .appendField("estación")
@@ -27,9 +28,9 @@ export function registerKafkaBlocks() {
       this.setColour(155);
       this.setTooltip("Construye el objeto que se enviará como evento JSON.");
     },
-  };
+    },
 
-  Blockly.Blocks["lab_kafka_publish"] = {
+    lab_kafka_publish: {
     init() {
       this.appendValueInput("EVENT").setCheck("Event").appendField("Publicar evento en tópico");
       this.appendDummyInput().appendField("tópico")
@@ -40,9 +41,9 @@ export function registerKafkaBlocks() {
       this.setColour(210);
       this.setTooltip("Publica el evento como JSON y utiliza la estación como clave.");
     },
-  };
+    },
 
-  Blockly.Blocks["lab_repeat"] = {
+    lab_repeat: {
     init() {
       this.appendDummyInput().appendField("Repetir")
         .appendField(new Blockly.FieldNumber(5, 1, 100, 1), "COUNT")
@@ -53,9 +54,9 @@ export function registerKafkaBlocks() {
       this.setColour(35);
       this.setTooltip("Repite los bloques conectados debajo.");
     },
-  };
+    },
 
-  Blockly.Blocks["lab_pause"] = {
+    lab_pause: {
     init() {
       this.appendDummyInput().appendField("Esperar")
         .appendField(new Blockly.FieldNumber(1, 0, 60, 0.5), "SECONDS")
@@ -64,9 +65,9 @@ export function registerKafkaBlocks() {
       this.setNextStatement(true);
       this.setColour(35);
     },
-  };
+    },
 
-  Blockly.Blocks["lab_consumer_setup"] = {
+    lab_consumer_setup: {
     init() {
       this.appendDummyInput().appendField("Configurar consumidor Kafka")
         .appendField("broker")
@@ -79,9 +80,9 @@ export function registerKafkaBlocks() {
       this.setColour(275);
       this.setTooltip("Configura el cliente consumidor, el tópico y el grupo.");
     },
-  };
+    },
 
-  Blockly.Blocks["lab_consumer_loop"] = {
+    lab_consumer_loop: {
     init() {
       this.appendDummyInput().appendField("Leer eventos continuamente");
       this.appendStatementInput("PROCESS").appendField("al procesar cada evento");
@@ -89,9 +90,9 @@ export function registerKafkaBlocks() {
       this.setColour(275);
       this.setTooltip("Genera el ciclo de lectura, manejo de errores y cierre del consumidor.");
     },
-  };
+    },
 
-  Blockly.Blocks["lab_consumer_validate"] = {
+    lab_consumer_validate: {
     init() {
       this.appendDummyInput().appendField("Validar PM2.5 y clasificar");
       this.setPreviousStatement(true);
@@ -99,9 +100,9 @@ export function registerKafkaBlocks() {
       this.setColour(120);
       this.setTooltip("Rechaza campos obligatorios ausentes o valores de PM2.5 negativos; clasifica los registros válidos.");
     },
-  };
+    },
 
-  Blockly.Blocks["lab_consumer_display"] = {
+    lab_consumer_display: {
     init() {
       this.appendDummyInput().appendField("Solo mostrar evento JSON");
       this.setPreviousStatement(true);
@@ -109,7 +110,9 @@ export function registerKafkaBlocks() {
       this.setColour(120);
       this.setTooltip("Imprime cada evento recibido sin transformarlo.");
     },
+    },
   };
+  Blockly.common.defineBlocks(definitions);
 }
 
 export const toolbox = {
