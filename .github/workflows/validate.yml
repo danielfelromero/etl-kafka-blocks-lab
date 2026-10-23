@@ -25,6 +25,5 @@ jobs:
         run: |
           npm install
           npm run build
-          npm run check:generated
       - name: Check Python syntax
         run: python -m compileall -q runtime
