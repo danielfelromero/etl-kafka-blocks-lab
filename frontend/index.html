@@ -12,10 +12,11 @@
         <div>
           <p class="eyebrow">LABORATORIO DIDÁCTICO · ETL</p>
           <h1>Kafka desde bloques</h1>
-          <p class="subtitle">Construye un productor y explora el Python que se genera.</p>
+          <p class="subtitle">Construye un productor o un consumidor y explora el Python que se genera.</p>
         </div>
         <div class="actions">
-          <button id="load-example" class="button button-quiet">Cargar ejemplo</button>
+          <button id="load-producer" class="button button-quiet">Ejemplo: productor</button>
+          <button id="load-consumer" class="button button-quiet">Ejemplo: consumidor</button>
           <button id="download-code" class="button button-primary">Descargar Python</button>
         </div>
       </header>
@@ -23,17 +24,17 @@
         <section class="workspace-panel">
           <div class="panel-heading">
             <div><span class="step">01</span><h2>Constructor visual</h2></div>
-            <p>Arrastra bloques. El programa se traduce automáticamente a Python.</p>
+            <p>Arrastra bloques. Para empezar, carga un ejemplo y cambia sus valores.</p>
           </div>
           <div id="blockly-workspace" aria-label="Espacio de bloques Blockly"></div>
         </section>
         <section class="code-panel">
           <div class="panel-heading">
             <div><span class="step">02</span><h2>Código Python generado</h2></div>
-            <p>Este código es una guía didáctica. Ejecútalo en el Codespace cuando Kafka esté iniciado.</p>
+            <p>Revisa la traducción de los bloques. El archivo se ejecuta en el Codespace, no en el navegador.</p>
           </div>
           <pre><code id="python-code"></code></pre>
-          <div class="callout"><strong>Observa:</strong> el broker recibe el valor JSON; la clave relaciona eventos de una estación con la partición correspondiente.</div>
+          <div class="callout"><strong>Explora:</strong> cambia broker, tópico, clave, grupo de consumidores o estrategia de validación. Descarga el Python y compáralo con los scripts de la carpeta <code>runtime/</code>.</div>
         </section>
       </main>
       <footer>Sin calificación ni entrega. Explora, modifica los bloques y relaciona cada uno con el código.</footer>
