@@ -6,8 +6,27 @@ export function registerKafkaBlocks() {
       init() {
         this.appendDummyInput().appendField("1 · Configurar productor")
           .appendField("broker").appendField(new Blockly.FieldTextInput("localhost:9092"), "BROKER");
+        this.appendValueInput("OPTIONS").setCheck("KafkaOptions").appendField("opciones avanzadas");
         this.setNextStatement(true); this.setColour(210);
         this.setTooltip("Define a qué broker se conectará el productor.");
+      },
+    },
+    lab_kafka_options: {
+      init() {
+        this.appendDummyInput().appendField("Configuración del productor Kafka");
+        this.appendDummyInput().appendField("acks")
+          .appendField(new Blockly.FieldDropdown([["all (mayor durabilidad)", "all"], ["1 (líder)", "1"], ["0 (sin confirmación)", "0"]]), "ACKS");
+        this.appendDummyInput().appendField("reintentos")
+          .appendField(new Blockly.FieldNumber(3, 0, 20, 1), "RETRIES")
+          .appendField("linger ms")
+          .appendField(new Blockly.FieldNumber(5, 0, 1000, 1), "LINGER");
+        this.appendDummyInput().appendField("compresión")
+          .appendField(new Blockly.FieldDropdown([["ninguna", "none"], ["gzip", "gzip"], ["snappy", "snappy"], ["lz4", "lz4"], ["zstd", "zstd"]]), "COMPRESSION");
+        this.appendDummyInput().appendField("idempotencia")
+          .appendField(new Blockly.FieldDropdown([["activada", "true"], ["desactivada", "false"]]), "IDEMPOTENCE");
+        this.setOutput(true, "KafkaOptions");
+        this.setColour(25);
+        this.setTooltip("Opciones de configuración del productor. Compara durabilidad, reintentos, latencia, compresión e idempotencia.");
       },
     },
     lab_event: {
@@ -100,7 +119,7 @@ export function registerKafkaBlocks() {
 export const toolbox = {
   kind: "categoryToolbox",
   contents: [
-    { kind: "category", name: "Productor", colour: "210", contents: [
+    { kind: "category", name: "Configuración Kafka", colour: "25", contents: [\n      { kind: "block", type: "lab_kafka_options" },\n    ]},\n    { kind: "category", name: "Productor", colour: "210", contents: [
       { kind: "block", type: "lab_kafka_setup" }, { kind: "block", type: "lab_kafka_publish" },
       { kind: "block", type: "lab_repeat" }, { kind: "block", type: "lab_pause" },
     ]},
