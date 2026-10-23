@@ -1,44 +1,57 @@
 import { pythonGenerator, Order } from "blockly/python";
 
-function escapePythonString(value) {
-  return JSON.stringify(String(value));
-}
+const pyString = (value) => JSON.stringify(String(value));
+const safeIdentifier = (value) => String(value).replace(/[^a-zA-Z0-9_]/g, "_");
 
 export function registerPythonGenerators() {
   pythonGenerator.forBlock["lab_kafka_setup"] = (block) => {
-    const broker = escapePythonString(block.getFieldValue("BROKER"));
-    pythonGenerator.definitions_["00_import_datetime"] = "import datetime";
-    pythonGenerator.definitions_["01_import_json"] = "import json";
-    pythonGenerator.definitions_["02_import_time"] = "import time";
-    pythonGenerator.definitions_["03_import_producer"] = "from confluent_kafka import Producer";
-    pythonGenerator.definitions_["05_kafka_producer"] =
-      "producer = Producer({\"bootstrap.servers\": " + broker + "})";
+    const broker = pyString(block.getFieldValue("BROKER"));
+    pythonGenerator.definitions_["00_import_json"] = "import json";
+    pythonGenerator.definitions_["01_import_time"] = "import time";
+    pythonGenerator.definitions_["02_import_kafka"] = "from confluent_kafka import Producer";
+    pythonGenerator.definitions_["03_import_datetime"] = "import datetime";
+    pythonGenerator.definitions_["04_delivery_callback"] =
+      "def delivery_report(error, message):\n" +
+      "    if error is not None:\n" +
+      "        print('Delivery failed: %s' % error)\n" +
+      "    else:\n" +
+      "        print('Delivered topic=%s partition=%s offset=%s' % (message.topic(), message.partition(), message.offset()))";
+    pythonGenerator.definitions_["05_producer"] = "producer = Producer({\"bootstrap.servers\": " + broker + "})";
     return "";
   };
 
   pythonGenerator.forBlock["lab_event"] = (block) => {
-    const station = escapePythonString(block.getFieldValue("STATION"));
-    const pm25 = Number(block.getFieldValue("PM25"));
-    const temp = Number(block.getFieldValue("TEMP"));
-    const expression =
-      '{"station_id": ' + station + ', "pm25": ' + pm25 + ', "temperature_c": ' + temp + '}';
+    const raw = block.getFieldValue("JSON") || "{}";
+    let valid = true;
+    try { JSON.parse(raw); } catch { valid = false; }
+    const expression = valid ? "json.loads(" + pyString(raw) + ")" : "{}";
     return [expression, Order.ATOMIC];
   };
 
+  pythonGenerator.forBlock["lab_header"] = (block) => {
+    const name = pyString(block.getFieldValue("NAME"));
+    const value = pyString(block.getFieldValue("VALUE"));
+    return "(" + name + ", " + value + "),\n";
+  };
+
   pythonGenerator.forBlock["lab_kafka_publish"] = (block, generator) => {
-    const event = generator.valueToCode(block, "EVENT", Order.NONE) ||
-      '{"station_id": "A01", "pm25": 18.4, "temperature_c": 27.1}';
-    const topic = escapePythonString(block.getFieldValue("TOPIC"));
-    pythonGenerator.definitions_["04_delivery_callback"] =
-      "def delivery_report(error, message):\n" +
-      "    if error is not None:\n" +
-      "        print(\"Delivery failed: %s\" % error)\n" +
-      "    else:\n" +
-      "        print(\"Delivered to %s partition %s offset %s\" % (message.topic(), message.partition(), message.offset()))";
-    return "event = {**" + event + ', "event_time": datetime.datetime.now(datetime.timezone.utc).isoformat()}\n' +
-      "producer.produce(" + topic + ', key=event["station_id"], value=json.dumps(event), callback=delivery_report)\n' +
+    const event = generator.valueToCode(block, "EVENT", Order.NONE) || "json.loads('{}')";
+    const topic = pyString(block.getFieldValue("TOPIC"));
+    const key = block.getFieldValue("KEY");
+    const mode = block.getFieldValue("PARTITION_MODE");
+    const partition = Math.max(0, Number(block.getFieldValue("PARTITION")) || 0);
+    const headersCode = generator.statementToCode(block, "HEADERS");
+    const headers = headersCode.trim() ? "[" + headersCode.trim().replace(/,?\s*$/, "") + "]" : "None";
+    const keyExpr = key === "" ? "None" : pyString(key);
+    const partitionArg = mode === "MANUAL" ? ", partition=" + partition : "";
+    const varName = "event_" + safeIdentifier(block.id);
+    return varName + " = " + event + "\n" +
+      "if not isinstance(" + varName + ", dict):\n" +
+      "    raise ValueError('El evento debe ser un objeto JSON')\n" +
+      varName + '["event_time"] = datetime.datetime.now(datetime.timezone.utc).isoformat()\n' +
+      "producer.produce(topic=" + topic + ", key=" + keyExpr + ", value=json.dumps(" + varName + "), headers=" + headers + partitionArg + ")\n" +
       "producer.poll(0)\n" +
-      'print("Queued:", event)\n';
+      "print('Enviado a ' + " + topic + " + ': ' + json.dumps(" + varName + "))\n";
   };
 
   pythonGenerator.forBlock["lab_repeat"] = (block, generator) => {
@@ -53,87 +66,69 @@ export function registerPythonGenerators() {
   };
 
   pythonGenerator.forBlock["lab_consumer_setup"] = (block) => {
-    const broker = escapePythonString(block.getFieldValue("BROKER"));
-    const topic = escapePythonString(block.getFieldValue("TOPIC"));
-    const group = escapePythonString(block.getFieldValue("GROUP"));
-    pythonGenerator.definitions_["00_consumer_import_json"] = "import json";
-    pythonGenerator.definitions_["01_consumer_import_client"] = "from confluent_kafka import Consumer, KafkaError";
+    const broker = pyString(block.getFieldValue("BROKER"));
+    const topics = String(block.getFieldValue("TOPICS") || "").split(",").map(x => x.trim()).filter(Boolean);
+    const group = pyString(block.getFieldValue("GROUP"));
+    const offset = block.getFieldValue("OFFSET") || "earliest";
+    pythonGenerator.definitions_["00_consumer_imports"] = "import json\nfrom confluent_kafka import Consumer, KafkaError";
     return "consumer = Consumer({\n" +
       '    "bootstrap.servers": ' + broker + ",\n" +
-      '    "group.id": ' + group + ",\n" +
-      '    "auto.offset.reset": "earliest",\n' +
+      '    "group.id": ' + group + ",\n' +
+      '    "auto.offset.reset": ' + pyString(offset) + ",\n" +
       '    "enable.auto.commit": False,\n' +
       "})\n" +
-      "consumer.subscribe([" + topic + "])\n";
+      "consumer.subscribe(" + JSON.stringify(topics) + ")\n";
   };
 
   pythonGenerator.forBlock["lab_consumer_loop"] = (block, generator) => {
     let processCode = generator.statementToCode(block, "PROCESS");
-    if (!processCode) {
-      processCode = '    print("EVENT: %s" % json.dumps(event))\n';
-    }
-    const nestedProcessCode = processCode
-      .split("\n")
-      .map((line) => line ? "    " + line : line)
-      .join("\n");
-
+    if (!processCode) processCode = 'print("EVENT:", event)\n';
+    const nested = processCode.split("\n").map(line => line ? "            " + line : line).join("\n");
     return "try:\n" +
       "    while True:\n" +
       "        message = consumer.poll(1.0)\n" +
-      "        if message is None:\n" +
-      "            continue\n" +
+      "        if message is None:\n            continue\n" +
       "        if message.error():\n" +
-      "            if message.error().code() == KafkaError._PARTITION_EOF:\n" +
-      "                continue\n" +
-      '            print("Kafka error: %s" % message.error())\n' +
-      "            continue\n" +
-      "        try:\n" +
-      '            event = json.loads(message.value().decode("utf-8"))\n' +
+      "            if message.error().code() == KafkaError._PARTITION_EOF:\n                continue\n" +
+      '            print("Kafka error:", message.error())\n            continue\n' +
+      "        try:\n            event = json.loads(message.value().decode('utf-8'))\n" +
       "        except (UnicodeDecodeError, json.JSONDecodeError) as error:\n" +
-      '            print("Rejected invalid JSON: %s" % error)\n' +
-      "            consumer.commit(message=message, asynchronous=False)\n" +
-      "            continue\n" +
+      '            print("Mensaje JSON inválido:", error)\n            consumer.commit(message=message, asynchronous=False)\n            continue\n' +
       "        if not isinstance(event, dict):\n" +
-      '            print("REJECTED: event must be a JSON object")\n' +
-      "            consumer.commit(message=message, asynchronous=False)\n" +
-      "            continue\n" +
-      nestedProcessCode +
+      '            print("El valor JSON no es un objeto")\n            consumer.commit(message=message, asynchronous=False)\n            continue\n' +
+      nested +
       "        consumer.commit(message=message, asynchronous=False)\n" +
-      "except KeyboardInterrupt:\n" +
-      '    print("Stopping consumer...")\n' +
-      "finally:\n" +
-      "    consumer.close()\n";
+      "except KeyboardInterrupt:\n    print('Deteniendo consumidor...')\n" +
+      "finally:\n    consumer.close()\n";
   };
 
-  pythonGenerator.forBlock["lab_consumer_validate"] = () => {
-    return "if not isinstance(event, dict):\n" +
-      '    print("REJECTED: event must be a JSON object")\n' +
-      "else:\n" +
-      '    required = ("station_id", "pm25", "event_time")\n' +
-      "    missing = [field for field in required if field not in event]\n" +
-      "    if missing:\n" +
-      '        print("REJECTED: missing fields %s" % missing)\n' +
-      "    else:\n" +
-      "        try:\n" +
-      '            pm25 = float(event["pm25"])\n' +
-      "            if pm25 < 0:\n" +
-      '                raise ValueError("pm25 cannot be negative")\n' +
-      '            event["pm25"] = pm25\n' +
-      '            event["pm25_category"] = "high" if pm25 >= 25 else "normal"\n' +
-      '            print("PROCESSED: %s" % json.dumps(event))\n' +
-      "        except (TypeError, ValueError) as error:\n" +
-      '            print("REJECTED: %s" % error)\n';
-  };
+  pythonGenerator.forBlock["lab_consumer_inspect"] = () =>
+    "print({\n" +
+    "    'topic': message.topic(),\n" +
+    "    'partition': message.partition(),\n" +
+    "    'offset': message.offset(),\n" +
+    "    'key': message.key().decode('utf-8') if message.key() else None,\n" +
+    "    'headers': message.headers(),\n" +
+    "    'event': event,\n" +
+    "})\n";
 
-  pythonGenerator.forBlock["lab_consumer_display"] = () => {
-    return 'print("EVENT: %s" % json.dumps(event))\n';
-  };
+  pythonGenerator.forBlock["lab_consumer_validate"] = () =>
+    "required = ('station_id', 'pm25', 'event_time')\n" +
+    "missing = [field for field in required if field not in event]\n" +
+    "if missing:\n    print('REJECTED missing fields:', missing)\n" +
+    "else:\n" +
+    "    try:\n        pm25 = float(event['pm25'])\n" +
+    "        if pm25 < 0:\n            raise ValueError('pm25 cannot be negative')\n" +
+    "        event['pm25'] = pm25\n" +
+    "        event['pm25_category'] = 'high' if pm25 >= 25 else 'normal'\n" +
+    "        print('PROCESSED:', event)\n" +
+    "    except (TypeError, ValueError) as error:\n        print('REJECTED:', error)\n";
+
+  pythonGenerator.forBlock["lab_consumer_display"] = () => "print('EVENT JSON:', json.dumps(event, ensure_ascii=False))\n";
 }
 
 export function generatePython(workspace) {
-  const body = pythonGenerator.workspaceToCode(workspace);
-  const prefix = '"""Generated by ETL Kafka Blocks Lab. Educational example."""\n\n' +
-    "# The Kafka broker must be running before executing this file.\n\n";
-  const code = prefix + body;
-  return code.includes("producer.produce(") ? code + "\nproducer.flush(10)\n" : code;
+  return '"""Generated by ETL Kafka Blocks Lab. Educational example."""\n\n' +
+    "# Kafka must be running before executing this file.\n\n" +
+    pythonGenerator.workspaceToCode(workspace);
 }
