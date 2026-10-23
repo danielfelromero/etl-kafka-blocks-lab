@@ -1,14 +1,21 @@
 # Interfaz Blockly
 
-Aplicación frontend del laboratorio. Ejecutar desde esta carpeta:
+Aplicación visual del laboratorio. Ejecuta desde la carpeta `frontend`:
 
-```bash
+~~~bash
 npm install
 npm run dev -- --host 0.0.0.0
-```
+~~~
 
-Abre el puerto 5173 en Codespaces.
+En Codespaces, abre el puerto 5173 desde la pestaña **Ports**.
 
-Los bloques personalizados representan configuración, mediciones y publicación. El generador produce Python legible usando `confluent-kafka`; el botón de descarga guarda el script.
+## Ejemplos incluidos
 
-En esta versión, el editor se concentra en el productor. El consumidor se proporciona como Python en `runtime/consumer.py`, para que el grupo compare ambos roles sin saturar de conceptos el primer editor.
+- **Ejemplo: productor:** configura el broker, crea mediciones, repite la publicación y espera entre eventos.
+- **Ejemplo: consumidor:** configura broker, tópico y grupo; lee eventos y conecta una etapa de procesamiento.
+- **Validar PM2.5 y clasificar:** comprueba campos obligatorios, rechaza valores negativos y añade una categoría.
+- **Solo mostrar evento JSON:** imprime el evento sin transformarlo.
+
+El panel muestra el Python generado mientras se modifican los bloques. **Copiar Python** facilita pegarlo en un archivo del Codespace; **Descargar Python** lo descarga al equipo desde el que se abre el navegador.
+
+El broker Kafka se inicia mediante el entorno de Codespaces configurado en `.devcontainer`. La interfaz genera código, pero no ejecuta Python dentro del navegador. Los scripts generados se ejecutan por separado con el entorno virtual Python de la raíz del repositorio.
