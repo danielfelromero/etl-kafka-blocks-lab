@@ -25,18 +25,19 @@ Laboratorio didáctico para aprender el flujo de eventos de Kafka mediante bloqu
 
 5. Abre el puerto **5173** cuando Codespaces lo solicite.
 6. Pulsa **Cargar ejemplo**, observa el código Python y descárgalo.
-7. En otra terminal, instala la librería y ejecuta los scripts:
+7. En otra terminal, situada en la raíz del repositorio, inicia el consumidor de ejemplo:
 
    ```bash
-   python -m pip install -r runtime/requirements.txt
-   python runtime/consumer.py
+   .venv/bin/python runtime/consumer.py
    ```
 
-8. En una tercera terminal, ejecuta el productor:
+8. En una tercera terminal, también desde la raíz del repositorio, inicia el productor:
 
    ```bash
-   python runtime/producer.py
+   .venv/bin/python runtime/producer.py
    ```
+
+   También puedes ejecutar el script descargado desde Blockly, por ejemplo: `.venv/bin/python producer_generated.py` o `.venv/bin/python consumer_generated.py`.
 
 El broker está configurado para que los procesos dentro del Codespace se conecten mediante `localhost:9092` y los contenedores mediante su red interna.
 
