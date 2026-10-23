@@ -43,7 +43,7 @@ Preguntas para discutir:
 
 1. Pulsa **Ejemplo: consumidor**.
 2. Observa los campos de broker, tópico, grupo de consumidores y estrategia de procesamiento.
-3. Deja seleccionada la estrategia **Validar PM2.5 y clasificar** y copia el código en **consumer_generated.py**.
+3. Comprueba que el bloque **Validar PM2.5 y clasificar** esté conectado dentro de **al procesar cada evento**. Copia el código en **consumer_generated.py**.
 4. En una terminal, inicia el consumidor:
 
    ~~~bash
@@ -52,7 +52,7 @@ Preguntas para discutir:
 
 5. En otra terminal, ejecuta **producer_generated.py**. Comprueba que el consumidor recibe los eventos, clasifica los valores y rechaza el PM2.5 negativo.
 
-Prueba también la estrategia **Solo mostrar eventos**. Compara el código y el resultado de las dos opciones.
+Después sustituye el bloque **Validar PM2.5 y clasificar** por **Solo mostrar evento JSON**. Compara el código y el resultado de las dos opciones.
 
 ## Parte 3. Leer y modificar Python (aprox. 30 minutos)
 
