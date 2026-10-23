@@ -119,7 +119,9 @@ export function registerKafkaBlocks() {
 export const toolbox = {
   kind: "categoryToolbox",
   contents: [
-    { kind: "category", name: "Configuración Kafka", colour: "25", contents: [\n      { kind: "block", type: "lab_kafka_options" },\n    ]},\n    { kind: "category", name: "Productor", colour: "210", contents: [
+    { kind: "category", name: "Configuración Kafka", colour: "25", contents: [
+      { kind: "block", type: "lab_kafka_options" },
+    ]},\n    { kind: "category", name: "Productor", colour: "210", contents: [
       { kind: "block", type: "lab_kafka_setup" }, { kind: "block", type: "lab_kafka_publish" },
       { kind: "block", type: "lab_repeat" }, { kind: "block", type: "lab_pause" },
     ]},
