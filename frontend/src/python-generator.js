@@ -16,8 +16,22 @@ export function registerPythonGenerators() {
       "        print('Delivery failed: %s' % error)\n" +
       "    else:\n" +
       "        print('Delivered topic=%s partition=%s offset=%s' % (message.topic(), message.partition(), message.offset()))";
-    pythonGenerator.definitions_["05_producer"] = "producer = Producer({\"bootstrap.servers\": " + broker + "})";
+    const options = pythonGenerator.valueToCode(block, "OPTIONS", Order.NONE);\n    pythonGenerator.definitions_["05_producer"] = "producer = Producer({\"bootstrap.servers\": " + broker + (options ? ", **" + options : "") + "})";
     return "";
+  };
+
+  pythonGenerator.forBlock["lab_kafka_options"] = (block) => {
+    const acks = pyString(block.getFieldValue("ACKS") || "all");
+    const retries = Math.max(0, Number(block.getFieldValue("RETRIES")) || 0);
+    const linger = Math.max(0, Number(block.getFieldValue("LINGER")) || 0);
+    const compression = pyString(block.getFieldValue("COMPRESSION") || "none");
+    const idempotence = block.getFieldValue("IDEMPOTENCE") === "true" ? "True" : "False";
+    const expression = "{\\"acks\\": " + acks +
+      ", \\"retries\\": " + retries +
+      ", \\"linger.ms\\": " + linger +
+      ", \\"compression.type\\": " + compression +
+      ", \\"enable.idempotence\\": " + idempotence + "}";
+    return [expression, Order.ATOMIC];
   };
 
   pythonGenerator.forBlock["lab_event"] = (block) => {
@@ -73,7 +87,7 @@ export function registerPythonGenerators() {
     pythonGenerator.definitions_["00_consumer_imports"] = "import json\nfrom confluent_kafka import Consumer, KafkaError";
     return "consumer = Consumer({\n" +
       '    "bootstrap.servers": ' + broker + ",\n" +
-      '    "group.id": ' + group + ",\n' +
+      '    "group.id": ' + group + ",\n" +
       '    "auto.offset.reset": ' + pyString(offset) + ",\n" +
       '    "enable.auto.commit": False,\n' +
       "})\n" +
