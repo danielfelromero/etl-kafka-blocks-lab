@@ -7,7 +7,7 @@ export function registerKafkaBlocks() {
       this.appendDummyInput()
         .appendField("Configurar productor Kafka")
         .appendField("broker")
-        .appendField(new Blockly.FieldTextInput("kafka:29092"), "BROKER");
+        .appendField(new Blockly.FieldTextInput("localhost:9092"), "BROKER");
       this.setNextStatement(true);
       this.setColour(210);
       this.setTooltip("Define el broker al que se conectará el productor.");
@@ -71,7 +71,7 @@ export function registerKafkaBlocks() {
     init() {
       this.appendDummyInput().appendField("Configurar consumidor Kafka")
         .appendField("broker")
-        .appendField(new Blockly.FieldTextInput("kafka:29092"), "BROKER");
+        .appendField(new Blockly.FieldTextInput("localhost:9092"), "BROKER");
       this.appendDummyInput().appendField("tópico")
         .appendField(new Blockly.FieldTextInput("mediciones_aire"), "TOPIC");
       this.appendDummyInput().appendField("grupo")
@@ -160,7 +160,7 @@ export const exampleProducerXml = [
 export const exampleConsumerXml = [
   '<xml xmlns="https://developers.google.com/blockly/xml">',
   '  <block type="lab_consumer_setup" x="35" y="30">',
-  '    <field name="BROKER">kafka:29092</field>',
+  '    <field name="BROKER">localhost:9092</field>',
   '    <field name="TOPIC">mediciones_aire</field>',
   '    <field name="GROUP">etl-kafka-blocks-demo</field>',
   '    <next>',
