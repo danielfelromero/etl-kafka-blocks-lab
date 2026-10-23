@@ -83,7 +83,7 @@ export function registerPythonGenerators() {
   pythonGenerator.forBlock["lab_consumer_loop"] = (block, generator) => {
     let processCode = generator.statementToCode(block, "PROCESS");
     if (!processCode) processCode = 'print("EVENT:", event)\n';
-    const nested = processCode.split("\n").map(line => line ? "            " + line : line).join("\n");
+    const nested = processCode.split("\n").map(line => line ? "    " + line : line).join("\n");
     return "try:\n" +
       "    while True:\n" +
       "        message = consumer.poll(1.0)\n" +
