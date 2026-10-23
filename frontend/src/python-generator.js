@@ -84,6 +84,10 @@ export function registerPythonGenerators() {
       "                    continue\n" +
       '                print("Kafka error: %s" % message.error())\n' +
       "                continue\n" +
+      "            if not isinstance(event, dict):\n" +
+      '                print("REJECTED: event must be a JSON object")\n' +
+      "                consumer.commit(message=message, asynchronous=False)\n" +
+      "                continue\n" +
       "            try:\n" +
       '                event = json.loads(message.value().decode("utf-8"))\n' +
       "            except (UnicodeDecodeError, json.JSONDecodeError) as error:\n" +
