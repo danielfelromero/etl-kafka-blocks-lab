@@ -114,20 +114,26 @@ export const toolbox = {
   ],
 };
 
-export const exampleProducerXml = "<xml xmlns=\\"https://developers.google.com/blockly/xml\\">\\n" +
-  "  <block type=\\"lab_kafka_setup\\" x=\\"35\\" y=\\"30\\">\\n" +
-  "    <next><block type=\\"lab_repeat\\"><field name=\\"COUNT\\">5</field>\\n" +
-  "      <statement name=\\"DO\\"><block type=\\"lab_kafka_publish\\"><field name=\\"TOPIC\\">mediciones_aire</field>\\n" +
-  "        <value name=\\"EVENT\\"><block type=\\"lab_event\\"><field name=\\"STATION\\">A01</field>\\n" +
-  "          <field name=\\"PM25\\">18.4</field><field name=\\"TEMP\\">27.1</field></block></value>\\n" +
-  "        <next><block type=\\"lab_pause\\"><field name=\\"SECONDS\\">1</field></block></next>\\n" +
-  "      </block></statement></block></next>\\n" +
-  "  </block>\\n</xml>";
+export const exampleProducerXml = [
+  '<xml xmlns="https://developers.google.com/blockly/xml">',
+  '  <block type="lab_kafka_setup" x="35" y="30">',
+  '    <next><block type="lab_repeat"><field name="COUNT">5</field>',
+  '      <statement name="DO"><block type="lab_kafka_publish"><field name="TOPIC">mediciones_aire</field>',
+  '        <value name="EVENT"><block type="lab_event"><field name="STATION">A01</field>',
+  '          <field name="PM25">18.4</field><field name="TEMP">27.1</field></block></value>',
+  '        <next><block type="lab_pause"><field name="SECONDS">1</field></block></next>',
+  '      </block></statement></block></next>',
+  '  </block>',
+  '</xml>',
+].join("\n");
 
-export const exampleConsumerXml = "<xml xmlns=\\"https://developers.google.com/blockly/xml\\">\\n" +
-  "  <block type=\\"lab_consumer_program\\" x=\\"35\\" y=\\"30\\">\\n" +
-  "    <field name=\\"BROKER\\">localhost:9092</field>\\n" +
-  "    <field name=\\"TOPIC\\">mediciones_aire</field>\\n" +
-  "    <field name=\\"GROUP\\">etl-kafka-blocks-demo</field>\\n" +
-  "    <field name=\\"STRATEGY\\">validate</field>\\n" +
-  "  </block>\\n</xml>";
+export const exampleConsumerXml = [
+  '<xml xmlns="https://developers.google.com/blockly/xml">',
+  '  <block type="lab_consumer_program" x="35" y="30">',
+  '    <field name="BROKER">localhost:9092</field>',
+  '    <field name="TOPIC">mediciones_aire</field>',
+  '    <field name="GROUP">etl-kafka-blocks-demo</field>',
+  '    <field name="STRATEGY">validate</field>',
+  '  </block>',
+  '</xml>',
+].join("\n");
