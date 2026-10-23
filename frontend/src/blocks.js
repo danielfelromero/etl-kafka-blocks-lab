@@ -148,8 +148,7 @@ export const exampleProducerXml = [
   '   </block></statement></block>',
   ' </next></block>',
   '</xml>',
-].join("
-");
+].join("\n");
 
 export const exampleConsumerXml = [
   '<xml xmlns="https://developers.google.com/blockly/xml">',
@@ -159,5 +158,4 @@ export const exampleConsumerXml = [
   '  </block></next>',
   ' </block>',
   '</xml>',
-].join("
-");
+].join("\n");
