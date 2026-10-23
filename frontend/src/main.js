@@ -1,5 +1,5 @@
-import Blockly from "blockly/core";
-import libraryBlocks from "blockly/blocks";
+import * as Blockly from "blockly/core";
+import * as libraryBlocks from "blockly/blocks";
 import "./style.css";
 import {
   exampleConsumerXml,
