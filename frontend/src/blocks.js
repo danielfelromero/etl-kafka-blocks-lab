@@ -1,4 +1,4 @@
-import * as Blockly from "blockly/core";
+import * as Blockly from "blockly";
 
 export function registerKafkaBlocks() {
   Blockly.Blocks["lab_kafka_setup"] = {
