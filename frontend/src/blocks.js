@@ -65,12 +65,32 @@ export function registerKafkaBlocks() {
       this.setColour(35);
     },
   };
+
+  Blockly.Blocks["lab_consumer_program"] = {
+    init() {
+      this.appendDummyInput().appendField("Programa completo: consumidor Kafka");
+      this.appendDummyInput().appendField("broker")
+        .appendField(new Blockly.FieldTextInput("localhost:9092"), "BROKER");
+      this.appendDummyInput().appendField("tópico")
+        .appendField(new Blockly.FieldTextInput("mediciones_aire"), "TOPIC");
+      this.appendDummyInput().appendField("grupo")
+        .appendField(new Blockly.FieldTextInput("etl-kafka-blocks-demo"), "GROUP");
+      this.appendDummyInput().appendField("procesamiento")
+        .appendField(new Blockly.FieldDropdown([
+          ["Validar PM2.5 y clasificar", "validate"],
+          ["Solo mostrar eventos", "display"],
+        ]), "STRATEGY");
+      this.setColour(275);
+      this.setTooltip("Genera un consumidor Python ejecutable, con lectura, cierre y procesamiento básico.");
+      this.setHelpUrl("https://docs.confluent.io/kafka-clients/python/current/overview.html");
+    },
+  };
 }
 
 export const toolbox = {
   kind: "categoryToolbox",
   contents: [
-    { kind: "category", name: "Kafka", colour: "210", contents: [
+    { kind: "category", name: "Productor", colour: "210", contents: [
       { kind: "block", type: "lab_kafka_setup" },
       { kind: "block", type: "lab_kafka_publish" },
     ]},
@@ -81,6 +101,9 @@ export const toolbox = {
       { kind: "block", type: "lab_repeat" },
       { kind: "block", type: "lab_pause" },
     ]},
+    { kind: "category", name: "Consumidor", colour: "275", contents: [
+      { kind: "block", type: "lab_consumer_program" },
+    ]},
     { kind: "category", name: "Lógica", categorystyle: "logic_category", contents: [
       { kind: "block", type: "controls_if" },
       { kind: "block", type: "logic_compare" },
@@ -90,29 +113,20 @@ export const toolbox = {
   ],
 };
 
-export const exampleXml = `<xml xmlns="https://developers.google.com/blockly/xml">
-  <block type="lab_kafka_setup" x="35" y="30">
-    <next>
-      <block type="lab_repeat">
-        <field name="COUNT">5</field>
-        <statement name="DO">
-          <block type="lab_kafka_publish">
-            <field name="TOPIC">mediciones_aire</field>
-            <value name="EVENT">
-              <block type="lab_event">
-                <field name="STATION">A01</field>
-                <field name="PM25">18.4</field>
-                <field name="TEMP">27.1</field>
-              </block>
-            </value>
-            <next>
-              <block type="lab_pause">
-                <field name="SECONDS">1</field>
-              </block>
-            </next>
-          </block>
-        </statement>
-      </block>
-    </next>
-  </block>
-</xml>`;
+export const exampleProducerXml = "<xml xmlns=\\"https://developers.google.com/blockly/xml\\">\\n" +
+  "  <block type=\\"lab_kafka_setup\\" x=\\"35\\" y=\\"30\\">\\n" +
+  "    <next><block type=\\"lab_repeat\\"><field name=\\"COUNT\\">5</field>\\n" +
+  "      <statement name=\\"DO\\"><block type=\\"lab_kafka_publish\\"><field name=\\"TOPIC\\">mediciones_aire</field>\\n" +
+  "        <value name=\\"EVENT\\"><block type=\\"lab_event\\"><field name=\\"STATION\\">A01</field>\\n" +
+  "          <field name=\\"PM25\\">18.4</field><field name=\\"TEMP\\">27.1</field></block></value>\\n" +
+  "        <next><block type=\\"lab_pause\\"><field name=\\"SECONDS\\">1</field></block></next>\\n" +
+  "      </block></statement></block></next>\\n" +
+  "  </block>\\n</xml>";
+
+export const exampleConsumerXml = "<xml xmlns=\\"https://developers.google.com/blockly/xml\\">\\n" +
+  "  <block type=\\"lab_consumer_program\\" x=\\"35\\" y=\\"30\\">\\n" +
+  "    <field name=\\"BROKER\\">localhost:9092</field>\\n" +
+  "    <field name=\\"TOPIC\\">mediciones_aire</field>\\n" +
+  "    <field name=\\"GROUP\\">etl-kafka-blocks-demo</field>\\n" +
+  "    <field name=\\"STRATEGY\\">validate</field>\\n" +
+  "  </block>\\n</xml>";
