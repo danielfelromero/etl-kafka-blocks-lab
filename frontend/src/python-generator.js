@@ -74,7 +74,7 @@ export function registerPythonGenerators() {
     }
     const nestedProcessCode = processCode
       .split("\n")
-      .map((line) => line ? "        " + line : line)
+      .map((line) => line ? "    " + line : line)
       .join("\n");
 
     return "try:\n" +
