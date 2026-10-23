@@ -66,24 +66,48 @@ export function registerKafkaBlocks() {
     },
   };
 
-  Blockly.Blocks["lab_consumer_program"] = {
+  Blockly.Blocks["lab_consumer_setup"] = {
     init() {
-      this.appendDummyInput().appendField("Programa completo: consumidor Kafka");
-      this.appendDummyInput().appendField("broker")
+      this.appendDummyInput().appendField("Configurar consumidor Kafka")
+        .appendField("broker")
         .appendField(new Blockly.FieldTextInput("kafka:29092"), "BROKER");
       this.appendDummyInput().appendField("tópico")
         .appendField(new Blockly.FieldTextInput("mediciones_aire"), "TOPIC");
       this.appendDummyInput().appendField("grupo")
         .appendField(new Blockly.FieldTextInput("etl-kafka-blocks-demo"), "GROUP");
-      this.appendDummyInput().appendField("procesamiento")
-        .appendField(new Blockly.FieldDropdown([
-          ["Validar PM2.5 y clasificar", "validate"],
-          ["Solo mostrar eventos", "display"],
-        ]), "STRATEGY");
+      this.setNextStatement(true);
+      this.setColour(275);
+      this.setTooltip("Configura el cliente consumidor, el tópico y el grupo.");
+    },
+  };
+
+  Blockly.Blocks["lab_consumer_loop"] = {
+    init() {
+      this.appendDummyInput().appendField("Leer eventos continuamente");
+      this.appendStatementInput("PROCESS").appendField("al procesar cada evento");
       this.setPreviousStatement(true);
       this.setColour(275);
-      this.setTooltip("Genera un consumidor Python ejecutable, con lectura, cierre y procesamiento básico.");
-      this.setHelpUrl("https://docs.confluent.io/kafka-clients/python/current/overview.html");
+      this.setTooltip("Genera el ciclo de lectura, manejo de errores y cierre del consumidor.");
+    },
+  };
+
+  Blockly.Blocks["lab_consumer_validate"] = {
+    init() {
+      this.appendDummyInput().appendField("Validar PM2.5 y clasificar");
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(120);
+      this.setTooltip("Rechaza campos obligatorios ausentes o valores de PM2.5 negativos; clasifica los registros válidos.");
+    },
+  };
+
+  Blockly.Blocks["lab_consumer_display"] = {
+    init() {
+      this.appendDummyInput().appendField("Solo mostrar evento JSON");
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(120);
+      this.setTooltip("Imprime cada evento recibido sin transformarlo.");
     },
   };
 }
@@ -103,7 +127,10 @@ export const toolbox = {
       { kind: "block", type: "lab_pause" },
     ]},
     { kind: "category", name: "Consumidor", colour: "275", contents: [
-      { kind: "block", type: "lab_consumer_program" },
+      { kind: "block", type: "lab_consumer_setup" },
+      { kind: "block", type: "lab_consumer_loop" },
+      { kind: "block", type: "lab_consumer_validate" },
+      { kind: "block", type: "lab_consumer_display" },
     ]},
     { kind: "category", name: "Lógica", categorystyle: "logic_category", contents: [
       { kind: "block", type: "controls_if" },
@@ -129,11 +156,15 @@ export const exampleProducerXml = [
 
 export const exampleConsumerXml = [
   '<xml xmlns="https://developers.google.com/blockly/xml">',
-  '  <block type="lab_consumer_program" x="35" y="30">',
+  '  <block type="lab_consumer_setup" x="35" y="30">',
   '    <field name="BROKER">kafka:29092</field>',
   '    <field name="TOPIC">mediciones_aire</field>',
   '    <field name="GROUP">etl-kafka-blocks-demo</field>',
-  '    <field name="STRATEGY">validate</field>',
+  '    <next>',
+  '      <block type="lab_consumer_loop">',
+  '        <statement name="PROCESS"><block type="lab_consumer_validate"></block></statement>',
+  '      </block>',
+  '    </next>',
   '  </block>',
   '</xml>',
 ].join("\n");
