@@ -1,5 +1,5 @@
-import * as Blockly from "blockly";
-import "blockly/blocks";
+import * as Blockly from "blockly/core";
+import * as libraryBlocks from "blockly/blocks";
 import "./style.css";
 import {
   exampleConsumerXml,
@@ -9,6 +9,7 @@ import {
 } from "./blocks.js";
 import { generatePython, registerPythonGenerators } from "./python-generator.js";
 
+Blockly.common.defineBlocks(libraryBlocks);
 registerKafkaBlocks();
 registerPythonGenerators();
 
