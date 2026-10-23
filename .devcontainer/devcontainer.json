@@ -1,25 +1,16 @@
 {
   "name": "ETL Kafka Blocks Lab",
-  "dockerComposeFile": [
-    "docker-compose.yml",
-    "../docker-compose.yml"
-  ],
+  "dockerComposeFile": "docker-compose.yml",
   "service": "workspace",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "22"
-    },
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11"
-    }
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" },
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.11" }
   },
-  "forwardPorts": [5173],
+  "forwardPorts": [5173, 9092],
   "portsAttributes": {
-    "5173": {
-      "label": "Blockly teaching app",
-      "onAutoForward": "openBrowser"
-    }
+    "5173": { "label": "Blockly teaching app", "onAutoForward": "openBrowser" },
+    "9092": { "label": "Kafka broker" }
   },
   "postCreateCommand": "python -m venv .venv && .venv/bin/pip install -r runtime/requirements.txt && cd frontend && npm install"
 }
