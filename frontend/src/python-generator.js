@@ -4,7 +4,7 @@ const pyString = (value) => JSON.stringify(String(value));
 const safeIdentifier = (value) => String(value).replace(/[^a-zA-Z0-9_]/g, "_");
 
 export function registerPythonGenerators() {
-  pythonGenerator.forBlock["lab_kafka_setup"] = (block) => {
+  pythonGenerator.forBlock["lab_kafka_setup"] = (block, generator) => {
     const broker = pyString(block.getFieldValue("BROKER"));
     pythonGenerator.definitions_["00_import_json"] = "import json";
     pythonGenerator.definitions_["01_import_time"] = "import time";
@@ -16,7 +16,7 @@ export function registerPythonGenerators() {
       "        print('Delivery failed: %s' % error)\n" +
       "    else:\n" +
       "        print('Delivered topic=%s partition=%s offset=%s' % (message.topic(), message.partition(), message.offset()))";
-    const options = pythonGenerator.valueToCode(block, "OPTIONS", Order.NONE);\n    pythonGenerator.definitions_["05_producer"] = "producer = Producer({\"bootstrap.servers\": " + broker + (options ? ", **" + options : "") + "})";
+    const options = generator.valueToCode(block, "OPTIONS", Order.NONE);\n    pythonGenerator.definitions_["05_producer"] = "producer = Producer({\"bootstrap.servers\": " + broker + (options ? ", **" + options : "") + "})";
     return "";
   };
 
