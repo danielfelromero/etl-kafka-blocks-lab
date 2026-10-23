@@ -1,0 +1,22 @@
+{
+  "name": "ETL Kafka Blocks Lab",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "forwardPorts": [5173, 9092],
+  "portsAttributes": {
+    "5173": {
+      "label": "Blockly teaching app",
+      "onAutoForward": "openBrowser"
+    },
+    "9092": {
+      "label": "Kafka host port",
+      "onAutoForward": "silent"
+    }
+  },
+  "postCreateCommand": "cd frontend && npm install && cd .. && python -m pip install -r runtime/requirements.txt"
+}
