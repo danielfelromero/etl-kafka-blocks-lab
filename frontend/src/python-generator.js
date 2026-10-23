@@ -16,7 +16,9 @@ export function registerPythonGenerators() {
       "        print('Delivery failed: %s' % error)\n" +
       "    else:\n" +
       "        print('Delivered topic=%s partition=%s offset=%s' % (message.topic(), message.partition(), message.offset()))";
-    const options = generator.valueToCode(block, "OPTIONS", Order.NONE);\n    pythonGenerator.definitions_["05_producer"] = "producer = Producer({\"bootstrap.servers\": " + broker + (options ? ", **" + options : "") + "})";
+    const options = generator.valueToCode(block, "OPTIONS", Order.NONE);
+    pythonGenerator.definitions_["05_producer"] =
+      "producer = Producer({\"bootstrap.servers\": " + broker + (options ? ", **" + options : "") + "})";
     return "";
   };
 
@@ -26,14 +28,13 @@ export function registerPythonGenerators() {
     const linger = Math.max(0, Number(block.getFieldValue("LINGER")) || 0);
     const compression = pyString(block.getFieldValue("COMPRESSION") || "none");
     const idempotence = block.getFieldValue("IDEMPOTENCE") === "true" ? "True" : "False";
-    const expression = "{\\"acks\\": " + acks +
-      ", \\"retries\\": " + retries +
-      ", \\"linger.ms\\": " + linger +
-      ", \\"compression.type\\": " + compression +
-      ", \\"enable.idempotence\\": " + idempotence + "}";
+    const expression = '{"acks": ' + acks +
+      ', "retries": ' + retries +
+      ', "linger.ms": ' + linger +
+      ', "compression.type": ' + compression +
+      ', "enable.idempotence": ' + idempotence + "}";
     return [expression, Order.ATOMIC];
   };
-
   pythonGenerator.forBlock["lab_event"] = (block) => {
     const raw = block.getFieldValue("JSON") || "{}";
     let valid = true;
