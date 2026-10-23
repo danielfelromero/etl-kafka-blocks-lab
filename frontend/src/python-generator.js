@@ -12,7 +12,7 @@ export function registerPythonGenerators() {
     pythonGenerator.definitions_["import_time"] = "import time";
     pythonGenerator.definitions_["import_producer"] = "from confluent_kafka import Producer";
     pythonGenerator.definitions_["kafka_producer"] =
-      "producer = Producer({\\"bootstrap.servers\\": " + escapePythonString(broker) + "})";
+      "producer = Producer({\"bootstrap.servers\": " + escapePythonString(broker) + "})";
     return "";
   };
 
@@ -32,9 +32,9 @@ export function registerPythonGenerators() {
     pythonGenerator.definitions_["delivery_callback"] =
       "def delivery_report(error, message):\n" +
       "    if error is not None:\n" +
-      "        print(f\\"Delivery failed: {error}\\")\n" +
+      "        print(\"Delivery failed: %s\" % error)\n" +
       "    else:\n" +
-      "        print(f\\"Delivered to {message.topic()} partition {message.partition()} offset {message.offset()}\\")";
+      "        print(\"Delivered to %s partition %s offset %s\" % (message.topic(), message.partition(), message.offset()))";
     return "event = {**" + event + ', "event_time": datetime.datetime.now(datetime.timezone.utc).isoformat()}\n' +
       "producer.produce(" + topic + ', key=event["station_id"], value=json.dumps(event), callback=delivery_report)\n' +
       "producer.poll(0)\n" +
@@ -73,7 +73,7 @@ export function registerPythonGenerators() {
       '        "enable.auto.commit": False,\n' +
       "    })\n" +
       "    consumer.subscribe([TOPIC])\n" +
-      "    print(\\"Listening on topic '%s'. Press Ctrl+C to stop.\\" % TOPIC)\n" +
+      '    print("Listening on topic %s. Press Ctrl+C to stop." % TOPIC)\n' +
       "    try:\n" +
       "        while True:\n" +
       "            message = consumer.poll(1.0)\n" +
@@ -82,22 +82,22 @@ export function registerPythonGenerators() {
       "            if message.error():\n" +
       "                if message.error().code() == KafkaError._PARTITION_EOF:\n" +
       "                    continue\n" +
-      "                print(\\"Kafka error: %s\\" % message.error())\n" +
+      '                print("Kafka error: %s" % message.error())\n' +
       "                continue\n" +
       "            try:\n" +
       '                event = json.loads(message.value().decode("utf-8"))\n' +
       "            except (UnicodeDecodeError, json.JSONDecodeError) as error:\n" +
-      "                print(\\"Rejected invalid JSON: %s\\" % error)\n" +
+      '                print("Rejected invalid JSON: %s" % error)\n' +
       "                consumer.commit(message=message, asynchronous=False)\n" +
       "                continue\n";
 
     let processBody;
     if (strategy === "validate") {
       processBody =
-        "            required = (\\"station_id\\", \\"pm25\\", \\"event_time\\")\n" +
+        '            required = ("station_id", "pm25", "event_time")\n' +
         "            missing = [field for field in required if field not in event]\n" +
         "            if missing:\n" +
-        "                print(\\"REJECTED: missing fields %s\\" % missing)\n" +
+        '                print("REJECTED: missing fields %s" % missing)\n' +
         "            else:\n" +
         "                try:\n" +
         '                    pm25 = float(event["pm25"])\n' +
@@ -105,17 +105,17 @@ export function registerPythonGenerators() {
         '                        raise ValueError("pm25 cannot be negative")\n' +
         '                    event["pm25"] = pm25\n' +
         '                    event["pm25_category"] = "high" if pm25 >= 25 else "normal"\n' +
-        "                    print(\\"PROCESSED: %s\\" % json.dumps(event))\n" +
+        '                    print("PROCESSED: %s" % json.dumps(event))\n' +
         "                except (TypeError, ValueError) as error:\n" +
-        "                    print(\\"REJECTED: %s\\" % error)\n";
+        '                    print("REJECTED: %s" % error)\n';
     } else {
-      processBody = "            print(\\"EVENT: %s\\" % json.dumps(event))\n";
+      processBody = '            print("EVENT: %s" % json.dumps(event))\n';
     }
 
     return prelude + processBody +
       "            consumer.commit(message=message, asynchronous=False)\n" +
       "    except KeyboardInterrupt:\n" +
-      "        print(\\"Stopping consumer...\\")\n" +
+      '        print("Stopping consumer...")\n' +
       "    finally:\n" +
       "        consumer.close()\n\n" +
       'if __name__ == "__main__":\n' +
