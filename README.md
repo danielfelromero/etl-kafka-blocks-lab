@@ -14,7 +14,7 @@ Laboratorio didáctico para aprender el flujo de eventos de Kafka mediante bloqu
 
 1. Abre el repositorio y selecciona **Code → Codespaces → Create codespace on main**.
 2. Espera a que termine la configuración de `.devcontainer`.
-3. En una terminal, inicia Kafka: `docker compose up -d kafka`.
+3. Kafka se inicia automáticamente con el Codespace. El consumidor y el productor usarán la dirección interna `kafka:29092`.
 4. Inicia la interfaz Blockly:
 
    ```bash
@@ -82,10 +82,8 @@ Blockly genera código; no simula Kafka. El broker es real y se ejecuta en Docke
 - Node.js/npm y Python (incluidos en el devcontainer).
 - Docker Compose.
 
-## Detener Kafka
+## Detener el entorno
 
-```bash
-docker compose down
-```
+Al terminar, detén el Codespace desde GitHub o Visual Studio Code; el broker forma parte del entorno Compose y se detiene con él. Si ejecutas Kafka por separado en una instalación local, puedes detenerlo con `docker compose down` desde la raíz del repositorio.
 
 No hay entrega ni calificación. El propósito es experimentar, hacer preguntas y relacionar los bloques con el código.
