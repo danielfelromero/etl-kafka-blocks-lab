@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#152238" />
+    <title>ETL Kafka Blocks Lab</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">LABORATORIO DIDÁCTICO · ETL</p>
+          <h1>Kafka desde bloques</h1>
+          <p class="subtitle">Construye un productor y explora el Python que se genera.</p>
+        </div>
+        <div class="actions">
+          <button id="load-example" class="button button-quiet">Cargar ejemplo</button>
+          <button id="download-code" class="button button-primary">Descargar Python</button>
+        </div>
+      </header>
+      <main>
+        <section class="workspace-panel">
+          <div class="panel-heading">
+            <div><span class="step">01</span><h2>Constructor visual</h2></div>
+            <p>Arrastra bloques. El programa se traduce automáticamente a Python.</p>
+          </div>
+          <div id="blockly-workspace" aria-label="Espacio de bloques Blockly"></div>
+        </section>
+        <section class="code-panel">
+          <div class="panel-heading">
+            <div><span class="step">02</span><h2>Código Python generado</h2></div>
+            <p>Este código es una guía didáctica. Ejecútalo en el Codespace cuando Kafka esté iniciado.</p>
+          </div>
+          <pre><code id="python-code"></code></pre>
+          <div class="callout"><strong>Observa:</strong> el broker recibe el valor JSON; la clave relaciona eventos de una estación con la partición correspondiente.</div>
+        </section>
+      </main>
+      <footer>Sin calificación ni entrega. Explora, modifica los bloques y relaciona cada uno con el código.</footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
