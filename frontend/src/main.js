@@ -57,6 +57,16 @@ document.getElementById("load-consumer").addEventListener("click", () => {
   loadExample(exampleConsumerXml, "consumer_generated.py");
 });
 
+document.getElementById("copy-code").addEventListener("click", async () => {
+  const status = document.getElementById("copy-status");
+  try {
+    await navigator.clipboard.writeText(generatePython(workspace));
+    status.textContent = "Código copiado. Pégalo en un archivo .py del Codespace para ejecutarlo.";
+  } catch (error) {
+    status.textContent = "No se pudo usar el portapapeles. Puedes seleccionar el código o descargar el archivo.";
+  }
+});
+
 document.getElementById("download-code").addEventListener("click", () => {
   const code = generatePython(workspace);
   const blob = new Blob([code], { type: "text/x-python;charset=utf-8" });
