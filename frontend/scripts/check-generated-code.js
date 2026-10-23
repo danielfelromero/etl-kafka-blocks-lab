@@ -1,6 +1,5 @@
 import { spawnSync } from "node:child_process";
-import * as Blockly from "blockly/core";
-import { Workspace } from "blockly/core";
+import Blockly from "blockly/core";
 import { registerKafkaBlocks } from "../src/blocks.js";
 import { generatePython, registerPythonGenerators } from "../src/python-generator.js";
 
@@ -27,7 +26,7 @@ function assertPythonSyntax(name, code) {
 }
 
 function producerExample() {
-  const workspace = new Workspace();
+  const workspace = new Blockly.Workspace();
   const setup = workspace.newBlock("lab_kafka_setup");
   const repeat = workspace.newBlock("lab_repeat");
   const publish = workspace.newBlock("lab_kafka_publish");
@@ -55,7 +54,7 @@ function producerExample() {
 }
 
 function consumerExample() {
-  const workspace = new Workspace();
+  const workspace = new Blockly.Workspace();
   const setup = workspace.newBlock("lab_consumer_setup");
   const loop = workspace.newBlock("lab_consumer_loop");
   const validate = workspace.newBlock("lab_consumer_validate");
