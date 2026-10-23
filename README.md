@@ -24,7 +24,7 @@ Laboratorio didáctico para aprender el flujo de eventos de Kafka mediante bloqu
    ```
 
 5. Abre el puerto **5173** cuando Codespaces lo solicite.
-6. Pulsa **Cargar ejemplo**, observa el código Python y descárgalo.
+6. Pulsa **Ejemplo: productor** o **Ejemplo: consumidor**, observa el código Python y usa **Copiar Python** o **Descargar Python**.
 7. En otra terminal, situada en la raíz del repositorio, inicia el consumidor de ejemplo:
 
    ```bash
@@ -37,9 +37,9 @@ Laboratorio didáctico para aprender el flujo de eventos de Kafka mediante bloqu
    .venv/bin/python runtime/producer.py
    ```
 
-   También puedes ejecutar el script descargado desde Blockly, por ejemplo: `.venv/bin/python producer_generated.py` o `.venv/bin/python consumer_generated.py`.
+   Para ejecutar el código generado en Blockly dentro del Codespace, pulsa **Copiar Python**, crea un archivo nuevo en la raíz del repositorio (por ejemplo, `producer_generated.py` o `consumer_generated.py`), pega el código y ejecútalo con `.venv/bin/python producer_generated.py`. El botón **Descargar Python** guarda el archivo en el equipo desde el que se abre el navegador; no lo copia automáticamente al Codespace.
 
-El broker está configurado para que los procesos dentro del Codespace se conecten mediante `localhost:9092` y los contenedores mediante su red interna.
+Desde el contenedor de desarrollo, Python y los scripts generados se conectan a Kafka mediante `kafka:29092`. El puerto `localhost:9092` se conserva para conexiones desde una terminal local cuando Kafka se ejecuta fuera de Codespaces.
 
 ## Guía de exploración
 
