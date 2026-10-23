@@ -121,7 +121,8 @@ export const toolbox = {
   contents: [
     { kind: "category", name: "Configuración Kafka", colour: "25", contents: [
       { kind: "block", type: "lab_kafka_options" },
-    ]},\n    { kind: "category", name: "Productor", colour: "210", contents: [
+    ]},
+    { kind: "category", name: "Productor", colour: "210", contents: [
       { kind: "block", type: "lab_kafka_setup" }, { kind: "block", type: "lab_kafka_publish" },
       { kind: "block", type: "lab_repeat" }, { kind: "block", type: "lab_pause" },
     ]},
@@ -147,7 +148,8 @@ export const exampleProducerXml = [
   '   </block></statement></block>',
   ' </next></block>',
   '</xml>',
-].join("\n");
+].join("
+");
 
 export const exampleConsumerXml = [
   '<xml xmlns="https://developers.google.com/blockly/xml">',
@@ -157,4 +159,5 @@ export const exampleConsumerXml = [
   '  </block></next>',
   ' </block>',
   '</xml>',
-].join("\n");
+].join("
+");
