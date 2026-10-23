@@ -80,6 +80,7 @@ export function registerKafkaBlocks() {
           ["Validar PM2.5 y clasificar", "validate"],
           ["Solo mostrar eventos", "display"],
         ]), "STRATEGY");
+      this.setPreviousStatement(true);
       this.setColour(275);
       this.setTooltip("Genera un consumidor Python ejecutable, con lectura, cierre y procesamiento básico.");
       this.setHelpUrl("https://docs.confluent.io/kafka-clients/python/current/overview.html");
