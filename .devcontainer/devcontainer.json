@@ -18,5 +18,5 @@
       "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "cd frontend && npm install && cd .. && python -m pip install -r runtime/requirements.txt"
+  "postCreateCommand": "cd frontend && npm install && cd .. && python -m venv .venv && .venv/bin/pip install -r runtime/requirements.txt"
 }
