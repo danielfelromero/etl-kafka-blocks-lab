@@ -1,4 +1,4 @@
-import * as Blockly from "blockly";
+import * as Blockly from "blockly/core";
 import "blockly/blocks";
 import "./style.css";
 import {
