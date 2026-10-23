@@ -1,7 +1,12 @@
 import * as Blockly from "blockly";
 import "blockly/blocks";
 import "./style.css";
-import { exampleXml, registerKafkaBlocks, toolbox } from "./blocks.js";
+import {
+  exampleConsumerXml,
+  exampleProducerXml,
+  registerKafkaBlocks,
+  toolbox,
+} from "./blocks.js";
 import { generatePython, registerPythonGenerators } from "./python-generator.js";
 
 registerKafkaBlocks();
@@ -17,29 +22,39 @@ const workspace = Blockly.inject("blockly-workspace", {
 });
 
 const codeElement = document.getElementById("python-code");
+let currentFilename = "producer_generated.py";
 
 function refreshCode() {
   try {
     codeElement.textContent = generatePython(workspace) || "# Añade bloques para generar código Python.";
   } catch (error) {
-    codeElement.textContent = `# No se pudo generar el código: ${error.message}`;
+    codeElement.textContent = "# No se pudo generar el código: " + error.message;
   }
+}
+
+function loadExample(xmlText, filename) {
+  Blockly.Events.disable();
+  try {
+    workspace.clear();
+    const xml = Blockly.utils.xml.textToDom(xmlText);
+    Blockly.Xml.domToWorkspace(xml, workspace);
+    currentFilename = filename;
+  } finally {
+    Blockly.Events.enable();
+  }
+  refreshCode();
 }
 
 workspace.addChangeListener((event) => {
   if (!event.isUiEvent) refreshCode();
 });
 
-document.getElementById("load-example").addEventListener("click", () => {
-  Blockly.Events.disable();
-  try {
-    workspace.clear();
-    const xml = Blockly.utils.xml.textToDom(exampleXml);
-    Blockly.Xml.domToWorkspace(xml, workspace);
-  } finally {
-    Blockly.Events.enable();
-  }
-  refreshCode();
+document.getElementById("load-producer").addEventListener("click", () => {
+  loadExample(exampleProducerXml, "producer_generated.py");
+});
+
+document.getElementById("load-consumer").addEventListener("click", () => {
+  loadExample(exampleConsumerXml, "consumer_generated.py");
 });
 
 document.getElementById("download-code").addEventListener("click", () => {
@@ -48,10 +63,9 @@ document.getElementById("download-code").addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "producer_generated.py";
+  link.download = currentFilename;
   link.click();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 
-document.getElementById("load-example").click();
-refreshCode();
+loadExample(exampleProducerXml, currentFilename);
