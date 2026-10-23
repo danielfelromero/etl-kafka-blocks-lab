@@ -6,9 +6,6 @@ services:
       - ..:/workspaces/${localWorkspaceFolderBasename}:cached
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    depends_on:
-      kafka:
-        condition: service_healthy
 
   kafka:
     image: apache/kafka:3.9.1
