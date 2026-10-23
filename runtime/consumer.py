@@ -12,6 +12,9 @@ GROUP_ID = os.getenv("KAFKA_GROUP_ID", "etl-kafka-blocks-demo")
 
 def transform_event(event):
     """Minimal ETL: validate required fields and add a simple category."""
+    if not isinstance(event, dict):
+        return None, "event must be a JSON object"
+
     required = ("station_id", "pm25", "event_time")
     missing = [field for field in required if field not in event]
     if missing:
