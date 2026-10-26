@@ -60,9 +60,11 @@ def main():
             try:
                 event = json.loads(message.value().decode("utf-8"))
             except (UnicodeDecodeError, json.JSONDecodeError) as error:
-                print(f"Invalid JSON at offset {message.offset()}: {error}")
-                # This introductory example does not commit malformed JSON.
-                # Production systems need an explicit retry or dead-letter policy.
+                print(f"DISCARDED malformed JSON at offset {message.offset()}: {error}")
+                # Explicit teaching policy: discard malformed JSON and commit it
+                # so one poison message does not block the partition forever.
+                # Production pipelines may route it to a dead-letter topic instead.
+                consumer.commit(message=message, asynchronous=False)
                 continue
 
             result, error = transform_event(event)
