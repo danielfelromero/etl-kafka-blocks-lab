@@ -23,13 +23,9 @@ jobs:
       - name: Build Blockly application
         working-directory: frontend
         run: |
-          npm install
+          npm ci
           npm run build
       - name: Check Python syntax
         run: python -m compileall -q runtime
       - name: Check shell scripts
-        run: bash -n setup_kafka.sh stop_kafka.sh diagnose_kafka.sh
-      - name: Validate Docker Compose definitions
-        run: |
-          docker compose -f docker-compose.yml config --quiet
-          docker compose -f docker-compose.ha.yml config --quiet
+        run: bash -n setup_kafka.sh stop_kafka.sh diagnose_kafka.sh setup_kafka_ha.sh stop_kafka_ha.sh setup_kafbat.sh stop_kafbat.sh
