@@ -40,7 +40,7 @@ Elimina `station_id`, escribe texto en `pm25` o prueba un valor negativo. Distin
 3. La validación de aplicación lo aceptó o rechazó.
 4. El consumidor confirmó el offset.
 
-La guía de referencia confirma el offset después de procesar o rechazar explícitamente el evento. Para JSON malformado, el consumidor de referencia no confirma el offset, por lo que puede volver a encontrarse con el mensaje al reiniciar. En producción habría que definir una política explícita: detenerse, reintentar o publicar en un dead-letter topic.
+Los ejemplos de referencia y generado aplican una política introductoria explícita: descartar el JSON malformado, informar el error y confirmar ese offset para evitar que un mensaje venenoso bloquee la partición. En producción también puede ser preferible detenerse, reintentar con límites o publicar el mensaje en un dead-letter topic; esa alternativa requeriría implementarse y probarse.
 
 ## Actividad 5 — Replicación y tolerancia a fallos (solo escenario avanzado)
 
