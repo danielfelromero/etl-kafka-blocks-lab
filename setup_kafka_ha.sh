@@ -92,6 +92,7 @@ if [[ "$ready" != true ]]; then
   exit 1
 fi
 
+"$HOME_KAFKA/bin/kafka-topics.sh" --bootstrap-server "$BOOTSTRAP" --create --if-not-exists --topic mediciones_aire --partitions 3 --replication-factor 3 --config min.insync.replicas=2
 "$HOME_KAFKA/bin/kafka-topics.sh" --bootstrap-server "$BOOTSTRAP" --create --if-not-exists --topic mediciones_aire_ha --partitions 3 --replication-factor 3 --config min.insync.replicas=2
 echo "Clúster avanzado listo. Bootstrap: $BOOTSTRAP"
 echo "Topic mediciones_aire_ha: 3 particiones, replication-factor=3, min.insync.replicas=2."
