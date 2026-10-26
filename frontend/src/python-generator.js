@@ -37,10 +37,12 @@ export function registerPythonGenerators() {
   };
   pythonGenerator.forBlock["lab_event"] = (block) => {
     const raw = block.getFieldValue("JSON") || "{}";
-    let valid = true;
-    try { JSON.parse(raw); } catch { valid = false; }
-    const expression = valid ? "json.loads(" + pyString(raw) + ")" : "{}";
-    return [expression, Order.ATOMIC];
+    try {
+      JSON.parse(raw);
+    } catch {
+      return ["raise ValueError(" + pyString("JSON inválido en el bloque Evento: corrige la sintaxis antes de publicar.") + ")", Order.ATOMIC];
+    }
+    return ["json.loads(" + pyString(raw) + ")", Order.ATOMIC];
   };
 
   pythonGenerator.forBlock["lab_header"] = (block) => {
@@ -64,7 +66,7 @@ export function registerPythonGenerators() {
       "if not isinstance(" + varName + ", dict):\n" +
       "    raise ValueError('El evento debe ser un objeto JSON')\n" +
       varName + '["event_time"] = datetime.datetime.now(datetime.timezone.utc).isoformat()\n' +
-      "producer.produce(topic=" + topic + ", key=" + keyExpr + ", value=json.dumps(" + varName + "), headers=" + headers + partitionArg + ")\n" +
+      "producer.produce(topic=" + topic + ", key=" + keyExpr + ", value=json.dumps(" + varName + "), headers=" + headers + partitionArg + ", callback=delivery_report)\n" +
       "producer.poll(0)\n" +
       "print('Enviado a ' + " + topic + " + ': ' + json.dumps(" + varName + "))\n";
   };
@@ -98,7 +100,7 @@ export function registerPythonGenerators() {
   pythonGenerator.forBlock["lab_consumer_loop"] = (block, generator) => {
     let processCode = generator.statementToCode(block, "PROCESS");
     if (!processCode) processCode = 'print("EVENT:", event)\n';
-    const nested = processCode.split("\n").map(line => line ? "    " + line : line).join("\n");
+    const nested = processCode.split("\n").map(line => line.trim() ? "            " + line.trimStart() : line).join("\n");
     return "try:\n" +
       "    while True:\n" +
       "        message = consumer.poll(1.0)\n" +
