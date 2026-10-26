@@ -1,10 +1,9 @@
+name: etl-kafka-blocks-basic
 services:
   kafka:
     image: apache/kafka:3.9.1
     hostname: kafka
-    container_name: etl-kafka-blocks-broker
-    ports:
-      - "9092:9092"
+    ports: ["9092:9092"]
     environment:
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
       KAFKA_NODE_ID: 1
@@ -20,9 +19,24 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
+    volumes: ["kafka-basic-data:/var/lib/kafka/data"]
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
-      retries: 12
+      retries: 18
+      start_period: 30s
     restart: unless-stopped
+  kafbat:
+    image: ghcr.io/kafbat/kafka-ui:v1.3.0
+    depends_on:
+      kafka: { condition: service_healthy }
+    ports: ["8080:8080"]
+    environment:
+      DYNAMIC_CONFIG_ENABLED: "true"
+      KAFKA_CLUSTERS_0_NAME: etl-kafka-basic
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: PLAINTEXT
+    restart: unless-stopped
+volumes:
+  kafka-basic-data:
