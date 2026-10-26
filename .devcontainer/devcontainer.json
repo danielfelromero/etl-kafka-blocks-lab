@@ -9,14 +9,26 @@
       "version": "22"
     }
   },
-  "forwardPorts": [5173, 9092],
+  "forwardPorts": [5173, 8080, 9092, 19092, 19093, 19094],
   "portsAttributes": {
     "5173": {
       "label": "Blockly teaching app",
       "onAutoForward": "openBrowser"
     },
+    "8080": {
+      "label": "Kafbat UI"
+    },
     "9092": {
-      "label": "Kafka broker"
+      "label": "Kafka basic broker"
+    },
+    "19092": {
+      "label": "Kafka HA broker 1"
+    },
+    "19093": {
+      "label": "Kafka HA broker 2"
+    },
+    "19094": {
+      "label": "Kafka HA broker 3"
     }
   },
   "postCreateCommand": "python -m venv .venv && .venv/bin/pip install -r runtime/requirements.txt && cd frontend && npm install"
