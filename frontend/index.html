@@ -12,7 +12,7 @@
         <div>
           <p class="eyebrow">LABORATORIO DIDÁCTICO · ETL</p>
           <h1>Kafka desde bloques</h1>
-          <p class="subtitle">Construye un productor o un consumidor y explora el Python que se genera.</p>
+          <p class="subtitle">Construye productor y consumidor, compara configuraciones y observa el Python generado.</p>
         </div>
         <div class="actions">
           <button id="load-producer" class="button button-quiet">Ejemplo: productor</button>
@@ -21,25 +21,44 @@
           <button id="download-code" class="button button-primary">Descargar Python</button>
         </div>
       </header>
+      <section class="scenario-panel">
+        <div class="scenario-copy">
+          <p class="eyebrow">ANTES DE EXPERIMENTAR</p>
+          <h2>Selecciona el escenario de infraestructura</h2>
+          <p>Seleccionar un modo cambia las sugerencias y las instrucciones; no inicia ni verifica por sí mismo Kafka.</p>
+        </div>
+        <div class="scenario-options">
+          <label class="scenario-card">
+            <input type="radio" name="scenario" value="basic" checked />
+            <span><strong>Modo básico · 1 broker</strong><small>Recomendado para empezar. Productores, consumidores, topics, claves, particiones y offsets. No demuestra tolerancia a fallos.</small></span>
+          </label>
+          <label class="scenario-card">
+            <input type="radio" name="scenario" value="ha" />
+            <span><strong>Modo avanzado · 3 brokers</strong><small>Requiere Docker Compose en un equipo o VM compatible. Permite estudiar replicación, ISR, acks y pérdida temporal de un broker.</small></span>
+          </label>
+        </div>
+        <div id="scenario-status" class="scenario-status" role="status" aria-live="polite"></div>
+        <div id="scenario-instructions" class="scenario-instructions"></div>
+      </section>
       <main>
         <section class="workspace-panel">
           <div class="panel-heading">
             <div><span class="step">01</span><h2>Constructor visual</h2></div>
-            <p>Arrastra bloques. Para empezar, carga un ejemplo y cambia sus valores.</p>
+            <p>Arrastra bloques. Carga un ejemplo y cambia los valores; la conexión sugerida depende del escenario.</p>
           </div>
           <div id="blockly-workspace" aria-label="Espacio de bloques Blockly"></div>
         </section>
         <section class="code-panel">
           <div class="panel-heading">
             <div><span class="step">02</span><h2>Código Python generado</h2></div>
-            <p>Revisa la traducción de los bloques. El archivo se ejecuta en el Codespace, no en el navegador.</p>
+            <p>Revisa la traducción de los bloques. El archivo se ejecuta en el entorno Python, no en el navegador.</p>
           </div>
           <pre><code id="python-code"></code></pre>
           <p id="copy-status" class="copy-status" aria-live="polite"></p>
-          <div class="callout"><strong>Explora:</strong> cambia broker, tópico, clave, grupo de consumidores o estrategia de validación. Descarga el Python y compáralo con los scripts de la carpeta <code>runtime/</code>.</div>
+          <div class="callout"><strong>Explora:</strong> cambia topic, clave, partición, headers, grupo y opciones del productor. La configuración del clúster se administra fuera del código del cliente.</div>
         </section>
       </main>
-      <footer>Sin calificación ni entrega. Explora, modifica los bloques y relaciona cada uno con el código.</footer>
+      <footer>Práctica exploratoria, sin calificación ni entrega. Seleccionar un escenario no confirma que la infraestructura esté activa.</footer>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>
