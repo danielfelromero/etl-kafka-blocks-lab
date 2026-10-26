@@ -1,106 +1,78 @@
 # Guía de exploración: Kafka desde bloques
 
-Esta guía es para experimentar en clase. **No es una entrega calificable y no hay que entregar un archivo final.** El propósito es conectar conceptos con comportamiento real y hacer preguntas mientras se prueba el código.
+Práctica de exploración, no calificable. No hay entrega: construye, cambia valores, ejecuta y discute lo que observas.
 
-## Objetivo
+## Preparar el laboratorio
 
-Construir un productor y un consumidor para un flujo de mediciones de calidad del aire, primero con bloques y después con Python. Kafka se ejecuta como broker real en el Codespace.
+1. Abre el repositorio en GitHub Codespaces.
+2. En una terminal, inicia el broker básico: `./setup_kafka.sh`.
+3. Comprueba la conexión con `./diagnose_kafka.sh`.
+4. En otra terminal, ejecuta `cd frontend && npm run dev -- --host 0.0.0.0` y abre el puerto 5173.
+5. En Blockly selecciona **Modo básico · 1 broker**. El selector no verifica ni inicia Kafka por sí mismo.
 
-## Antes de empezar
+## Actividad 1 — Productor, topic y evento
 
-1. Abre el repositorio en GitHub y selecciona **Code → Codespaces → Create codespace on main**.
-2. Espera a que termine la configuración. Kafka se inicia junto con el entorno.
-3. En la terminal de Codespaces, ejecuta:
+Carga el ejemplo de productor. Identifica la configuración del cliente, el evento JSON, el topic, la clave, la partición y los headers. Cambia el topic y modifica un campo del evento. Copia el código generado a `producer_generated.py` y ejecútalo con `.venv/bin/python producer_generated.py`.
 
-   ~~~bash
-   cd frontend
-   npm run dev -- --host 0.0.0.0
-   ~~~
+Pregunta: ¿qué pertenece al valor JSON y qué se transporta como metadato del mensaje? ¿Qué confirma un callback de entrega?
 
-4. Abre el puerto **5173** desde la notificación de Codespaces o desde la pestaña **Ports**.
+## Actividad 2 — Claves y particiones
 
-## Parte 1. Construir el productor (aprox. 30 minutos)
+Envía varios eventos con la misma clave y después cambia la clave. Observa la partición y el offset. Con el particionador habitual, la misma clave suele asignarse de forma consistente a una partición bajo la misma configuración; cambiar el número de particiones o el particionador puede cambiar el mapeo. Si no se especifica clave, se aplica otra estrategia de particionado. El orden se garantiza dentro de una partición, no globalmente entre todas las particiones.
 
-1. Pulsa **Ejemplo: productor**.
-2. Identifica los bloques de configuración del productor, medición, publicación, repetición y espera.
-3. Cambia el identificador de estación, el valor de PM2.5 y el tópico. Observa cómo cambia el código.
-4. Pulsa **Copiar Python** y crea un archivo **producer_generated.py** en la raíz del repositorio; pega allí el código.
-5. En otra terminal situada en la raíz, ejecuta:
+Prueba la partición manual solo si sabes que el topic tiene esa partición. ¿Qué error produce una partición inexistente?
 
-   ~~~bash
-   .venv/bin/python producer_generated.py
-   ~~~
+## Actividad 3 — Grupos y offsets
 
-6. Observa las confirmaciones de entrega, tópico, partición y offset.
+Carga el consumidor y ejecuta el script generado. Después:
+- Cambia `group.id` y vuelve a ejecutar: el grupo nuevo tiene su propio estado de offsets.
+- Ejecuta dos consumidores con el mismo grupo: las particiones se reparten entre miembros del grupo; no es una copia de cada mensaje a cada consumidor.
+- Ejecuta consumidores con grupos distintos: cada grupo puede leer el mismo topic de forma independiente.
+- Detén un consumidor mientras el productor publica y reinícialo. Observa el offset confirmado y el lag cuando esté disponible.
 
-Preguntas para discutir:
+`auto.offset.reset` se aplica cuando el grupo no tiene un offset válido; no significa que se rebobine cada vez.
 
-- ¿Por qué el productor no escribe directamente en la base de datos?
-- ¿Cuál es la diferencia entre la clave del mensaje y su valor JSON?
-- ¿Qué cambia si se modifica el tópico?
+## Actividad 4 — Validación de eventos
 
-## Parte 2. Construir y observar el consumidor (aprox. 30 minutos)
+Elimina `station_id`, escribe texto en `pm25` o prueba un valor negativo. Distingue:
+1. Kafka recibió el mensaje.
+2. El consumidor lo leyó.
+3. La validación de aplicación lo aceptó o rechazó.
+4. El consumidor confirmó el offset.
 
-1. Pulsa **Ejemplo: consumidor**.
-2. Observa los campos de broker, tópico, grupo de consumidores y estrategia de procesamiento.
-3. Comprueba que el bloque **Validar PM2.5 y clasificar** esté conectado dentro de **al procesar cada evento**. Copia el código en **consumer_generated.py**.
-4. En una terminal, inicia el consumidor:
+La guía de referencia confirma el offset después de procesar o rechazar explícitamente el evento. Para JSON malformado, el consumidor de referencia no confirma el offset, por lo que puede volver a encontrarse con el mensaje al reiniciar. En producción habría que definir una política explícita: detenerse, reintentar o publicar en un dead-letter topic.
 
-   ~~~bash
-   .venv/bin/python consumer_generated.py
-   ~~~
+## Actividad 5 — Replicación y tolerancia a fallos (solo escenario avanzado)
 
-5. En otra terminal, ejecuta **producer_generated.py**. Comprueba que el consumidor recibe los eventos, clasifica los valores y rechaza el PM2.5 negativo.
-
-Después sustituye el bloque **Validar PM2.5 y clasificar** por **Solo mostrar evento JSON**. Compara el código y el resultado de las dos opciones.
-
-## Parte 3. Leer y modificar Python (aprox. 30 minutos)
-
-Relaciona los conceptos visuales con estas partes del código:
-
-- La configuración de bootstrap servers.
-- El nombre del tópico.
-- La llamada producer.produce(...).
-- La clave del mensaje y la serialización JSON.
-- Las operaciones consumer.subscribe(...) y consumer.poll(...).
-- La validación de PM2.5 y el commit del offset.
-
-Haz una modificación pequeña directamente en el archivo Python y vuelve a ejecutarlo. El objetivo es comprobar que los bloques son una representación visual del código, no un sustituto de Python.
-
-## Parte 4. Experimentos de Kafka (aprox. 25 minutos)
-
-Elige dos o tres experimentos y observa los resultados:
-
-- Cambia la clave del mensaje. ¿Qué pasa con la partición asignada?
-- Cambia el identificador del grupo de consumidores y vuelve a consumir.
-- Detén el consumidor mientras el productor publica mensajes; luego vuelve a iniciarlo.
-- Cambia un valor de PM2.5 a uno negativo y observa la validación.
-- Envía un mensaje con un campo obligatorio ausente y analiza cómo debería tratarse.
-
-## Parte 5. Cierre de discusión (aprox. 15 minutos)
-
-Utiliza las preguntas como conversación, no como examen:
-
-- ¿Qué responsabilidad tiene Kafka y cuál tiene el consumidor?
-- ¿Qué diferencia hay entre un tópico, una partición, un mensaje y un grupo de consumidores?
-- ¿Qué ocurre si un mensaje se lee pero el procesamiento falla antes de confirmar el offset?
-- ¿Qué faltaría para que el consumidor guardara los registros válidos en una base de datos?
-- ¿Qué partes deberían cambiar al pasar de esta práctica a un pipeline ETL más real?
-
-## Ejecutar los scripts de referencia
-
-El repositorio incluye ejemplos escritos directamente en Python, por si quieres comparar con lo generado:
+Necesitas Docker Compose en un equipo o VM compatible. El escenario avanzado usa tres nodos Kafka con roles broker/controller y quorum KRaft de tres nodos. No se garantiza que Docker esté disponible dentro de Codespaces.
 
 ~~~bash
-# Terminal 1: consumidor
-.venv/bin/python runtime/consumer.py
-
-# Terminal 2: productor
-.venv/bin/python runtime/producer.py
+docker compose -f docker-compose.ha.yml up -d --wait
+docker compose -f docker-compose.ha.yml exec kafka-1 /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:29092 --create --if-not-exists --topic mediciones_aire_ha --partitions 3 --replication-factor 3 --config min.insync.replicas=2
+docker compose -f docker-compose.ha.yml exec kafka-1 /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:29092 --describe --topic mediciones_aire_ha
 ~~~
 
-Desde Codespaces, los scripts usan kafka:29092 para conectarse al servicio Kafka. Si los ejecutas desde una terminal local fuera de Codespaces, utiliza localhost:9092 en la configuración.
+Abre Kafbat en `http://localhost:8080`. Inspecciona brokers, particiones, líderes, réplicas e ISR. Publica mensajes con `acks=1` y después con `acks=all`. Detén un nodo con `docker compose -f docker-compose.ha.yml stop kafka-2`, vuelve a inspeccionar el topic y luego recupéralo con `docker compose -f docker-compose.ha.yml start kafka-2`.
 
-## Alcance didáctico
+Con `min.insync.replicas=2` y `acks=all`, las escrituras requieren al menos dos réplicas sincronizadas. Si quedan menos, las escrituras pueden fallar; no confundas esa falta de disponibilidad temporal con pérdida automática de todos los datos. Registra únicamente lo que realmente observas: la guía no presupone que el experimento se haya ejecutado.
 
-El consumidor de esta versión transforma y muestra los datos en terminal; no persiste todavía en una base de datos. Tampoco se incluyen Airflow, esquemas centralizados ni despliegues productivos. Se incorporarán solo después de comprender el recorrido básico productor → Kafka → consumidor.
+## Kafbat UI
+
+Kafbat viene en los archivos Compose, no en el modo básico de Codespaces sin Docker. En la red Docker usa los nombres de servicio y el listener interno; desde el navegador se abre el puerto publicado 8080. No configures Kafbat con `localhost:9092` dentro de su contenedor.
+
+## Schema Registry: extensión opcional
+
+Schema Registry administra contratos versionados y políticas de compatibilidad; no es un validador automático incorporado a Kafka. Avro, JSON Schema y Protobuf son formatos distintos. JSON válido sintácticamente puede no cumplir el contrato. Este laboratorio no inicia un Registry ni pretende simularlo.
+
+## Cierre de discusión
+
+- ¿Qué diferencia hay entre topic, partición, mensaje y grupo?
+- ¿Qué responsabilidad tiene Kafka y cuál el código ETL?
+- ¿Qué cambia entre confirmar un offset antes o después del procesamiento?
+- ¿Qué garantiza `acks=all` y qué papel tiene `min.insync.replicas`?
+- ¿Qué cambia al pasar de un broker a tres brokers?
+- ¿Qué necesitarías para persistir los eventos válidos en una base de datos?
+
+## Parada
+
+Modo básico: `./stop_kafka.sh`. Modo avanzado: `docker compose -f docker-compose.ha.yml down`. Añade `-v` solo si quieres borrar también los datos persistidos.
