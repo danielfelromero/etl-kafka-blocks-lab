@@ -27,3 +27,9 @@ jobs:
           npm run build
       - name: Check Python syntax
         run: python -m compileall -q runtime
+      - name: Check shell scripts
+        run: bash -n setup_kafka.sh stop_kafka.sh diagnose_kafka.sh
+      - name: Validate Docker Compose definitions
+        run: |
+          docker compose -f docker-compose.yml config --quiet
+          docker compose -f docker-compose.ha.yml config --quiet
