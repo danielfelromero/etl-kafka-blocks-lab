@@ -1,84 +1,169 @@
-# Práctica 2 — Avanzada: replicación, Kafbat y tolerancia a fallos
+# Práctica 2 — Avanzada: replicación, interfaz visual y tolerancia a fallos
 
-## Objetivo
+## Objetivos
 
-Explorar replicación de particiones, líderes, ISR (in-sync replicas), confirmaciones de productor y disponibilidad cuando falla un nodo.
+Al terminar, podrás comparar un broker con un clúster replicado, inspeccionar particiones y réplicas en Kafbat UI, producir y consumir desde varios topics, y observar qué sucede cuando un nodo deja de estar disponible.
 
-## Elegir el entorno
+Esta práctica es independiente de la básica. No cambies ni borres `.kafka/data`, que pertenece al broker básico.
 
-Hay dos opciones para ejecutar el clúster avanzado:
+## 1. Preparar el clúster avanzado sin Docker
 
-- **Opción A — Docker Compose (incluye Kafbat UI):** recomendada en un equipo local o VM donde Docker Engine y Compose v2 ya funcionan.
-- **Opción B — tres procesos Kafka sin Docker:** útil en Codespaces si el broker básico ya funciona, pero consume más memoria y Kafbat no se incluye en esta opción.
-
-Docker-in-Docker no es requisito del curso. Añadir la feature al `.devcontainer/devcontainer.json` no garantiza que Codespaces pueda construir y arrancar el contenedor con las capacidades necesarias; por eso se conserva una ruta sin Docker.
-
-## Opción A — Docker Compose y Kafbat
-
-Desde la raíz:
+Desde la raíz del repositorio:
 
 ~~~bash
-docker compose -f docker-compose.ha.yml up -d --wait
-docker compose -f docker-compose.ha.yml ps
-~~~
-
-Abre `http://localhost:8080` y selecciona el clúster `etl-kafka-ha`. El topic `mediciones_aire_ha` se puede crear con:
-
-~~~bash
-docker compose -f docker-compose.ha.yml exec kafka-1 /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:29092 --create --if-not-exists --topic mediciones_aire_ha --partitions 3 --replication-factor 3 --config min.insync.replicas=2
-docker compose -f docker-compose.ha.yml exec kafka-1 /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:29092 --describe --topic mediciones_aire_ha
-~~~
-
-En Kafbat, inspecciona particiones, líderes, réplicas e ISR. En Blockly selecciona **Modo avanzado · 3 brokers**. La dirección sugerida para clientes que se ejecutan en el host es `localhost:19092,localhost:19093,localhost:19094`.
-
-Para simular una interrupción:
-
-~~~bash
-docker compose -f docker-compose.ha.yml stop kafka-2
-# Observa el estado del topic y prueba la producción con acks=all.
-docker compose -f docker-compose.ha.yml start kafka-2
-~~~
-
-Con `min.insync.replicas=2` y `acks=all`, la escritura requiere al menos dos réplicas sincronizadas. Si quedan menos, las escrituras pueden fallar temporalmente. Comprueba el resultado real en vez de asumir que toda escritura siempre tiene éxito.
-
-## Opción B — tres procesos Kafka locales, sin Docker
-
-Desde la raíz:
-
-~~~bash
-chmod +x setup_kafka_ha.sh stop_kafka_ha.sh
+chmod +x setup_kafka_ha.sh stop_kafka_ha.sh setup_kafbat.sh stop_kafbat.sh
 ./setup_kafka_ha.sh
 ~~~
 
-El script inicia tres nodos Kafka KRaft con IDs, almacenamiento y logs separados. El bootstrap es `localhost:19092,localhost:19093,localhost:19094`; el topic `mediciones_aire_ha` queda preparado con tres particiones y factor de replicación 3. En Blockly selecciona el modo avanzado y utiliza ese bootstrap.
+El script inicia tres nodos Kafka KRaft en la misma máquina, cada uno con su propio ID, puerto, log y directorio de datos. El bootstrap de clientes es:
 
-Inspecciona el topic:
+~~~text
+localhost:19092,localhost:19093,localhost:19094
+~~~
+
+El clúster crea los topics `mediciones_aire` y `mediciones_aire_ha`, ambos con tres particiones, factor de replicación 3 y `min.insync.replicas=2`.
+
+Verifica el estado:
 
 ~~~bash
+kafka_2.13-3.9.1/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:19092,localhost:19093,localhost:19094
 kafka_2.13-3.9.1/bin/kafka-topics.sh --bootstrap-server localhost:19092,localhost:19093,localhost:19094 --describe --topic mediciones_aire_ha
 ~~~
 
-Detén solo uno de los procesos para observar el efecto:
+En la descripción identifica `PartitionCount`, `ReplicationFactor`, `Leader`, `Replicas` e `Isr`. El líder puede variar entre particiones; no asumas que todos tienen el mismo líder.
+
+## 2. Iniciar Kafbat UI sin Docker
+
+En otra terminal, desde la raíz del repositorio:
+
+~~~bash
+./setup_kafbat.sh
+~~~
+
+El primer inicio descarga el código fuente oficial de Kafbat UI 1.3.0 y lo ejecuta con Gradle. Requiere Java 17 o superior, Git, curl y acceso a Internet; la compilación inicial puede tardar varios minutos y consumir memoria adicional. No instala Docker ni modifica el broker básico.
+
+Cuando el script indique que está listo, abre el puerto **8080** en Codespaces y entra a la interfaz. El clúster aparece como `etl-kafka-ha`.
+
+En Kafbat explora:
+
+1. **Brokers:** comprueba que aparecen tres brokers y revisa cuál actúa como controlador.
+2. **Topics:** abre `mediciones_aire_ha` y compara las particiones, los líderes, las réplicas y el ISR.
+3. **Messages:** consulta mensajes después de producir eventos en los siguientes pasos.
+4. **Consumer groups:** cuando haya un consumidor activo, observa sus offsets y el lag si está disponible.
+
+Kafbat es una interfaz de administración y observabilidad; los scripts y Blockly siguen siendo las herramientas para generar y ejecutar los ejemplos de la práctica.
+
+## 3. Producir en un topic replicado desde Blockly
+
+Abre la aplicación Blockly en una terminal separada:
+
+~~~bash
+cd frontend
+npm install
+npm run dev -- --host 0.0.0.0
+~~~
+
+Abre el puerto 5173 y selecciona **Modo avanzado · 3 brokers**. En el bloque de configuración del productor, utiliza el bootstrap avanzado anterior.
+
+Construye un productor con estos pasos:
+
+1. Configura el productor con los tres brokers.
+2. Añade la configuración avanzada del productor.
+3. Selecciona primero `acks=all`, reintentos mayores que cero e idempotencia activada.
+4. Crea un evento JSON de medición, por ejemplo `station_id`, `pm25` y `temperature_c`.
+5. En el bloque de envío escribe el topic `mediciones_aire_ha`, una clave como `A01` y un header como `source=sensor`.
+6. Envía varios eventos y descarga el Python generado en la raíz del repositorio.
+7. Ejecuta el script con el entorno del laboratorio: `.venv/bin/python producer_generated.py`.
+
+Anota los valores de `topic`, `partition` y `offset` que imprime el callback. En Kafbat, abre el topic y confirma que los eventos aparecen en la partición correspondiente.
+
+Repite con `acks=1`. Registra diferencias observadas, sin asumir que una prueba breve necesariamente provocará pérdida de mensajes.
+
+## 4. Trabajar con varios topics
+
+La interfaz Blockly permite escribir el nombre del topic en cada bloque de envío. Esto permite enviar eventos de categorías distintas con el mismo productor.
+
+Crea un topic adicional para alertas:
+
+~~~bash
+kafka_2.13-3.9.1/bin/kafka-topics.sh --bootstrap-server localhost:19092,localhost:19093,localhost:19094 --create --if-not-exists --topic alertas_aire --partitions 3 --replication-factor 3 --config min.insync.replicas=2
+~~~
+
+Desde Blockly, construye un productor que envíe:
+- mediciones normales a `mediciones_aire_ha`;
+- alertas de PM2.5 elevado a `alertas_aire`.
+
+Usa valores JSON distintos para distinguir una medición de una alerta. En Kafbat, abre cada topic y verifica que los eventos se almacenaron en el destino esperado.
+
+Ahora crea un consumidor desde Blockly:
+
+1. En el bloque de configuración, utiliza el mismo bootstrap de tres brokers.
+2. En el campo de topics escribe `mediciones_aire_ha, alertas_aire`.
+3. Usa un `group.id` nuevo, por ejemplo `grupo-multitopic-01`.
+4. Elige `earliest` para intentar leer los eventos existentes si el grupo no tiene offsets válidos.
+5. Añade el bloque para mostrar topic, partición, offset, clave, headers y JSON.
+6. Ejecuta el consumidor y vuelve a producir eventos en ambos topics.
+
+Comprueba que el consumidor informa de qué topic procede cada mensaje. La suscripción a varios topics no fusiona ni ordena globalmente los mensajes; el orden se conserva dentro de cada partición.
+
+## 5. Observar la tolerancia a la caída de un nodo
+
+Antes de detener un nodo, deja Kafbat abierto y confirma que el topic replicado tiene factor de replicación 3 y un ISR completo. Mantén activo un productor que use `acks=all`.
+
+En otra terminal, detén únicamente el proceso del nodo 2:
 
 ~~~bash
 kill "$(cat .kafka-ha/pids/kafka-2.pid)"
 ~~~
 
-Observa los logs en `.kafka-ha/logs/`, la descripción del topic y los resultados del productor. Luego detén el clúster de forma ordenada con `./stop_kafka_ha.sh`. Si el proceso se detuvo manualmente, el script de parada limpiará los PID restantes.
+Observa en Kafbat y en la terminal:
 
-Esta opción demuestra la caída de un proceso en la misma máquina, no la pérdida de un host físico o de una zona de disponibilidad. Los tres procesos comparten CPU, memoria, disco y sistema operativo.
+- si el broker sigue apareciendo o pasa a estar desconectado;
+- si cambia el líder de alguna partición;
+- cómo cambia la lista ISR;
+- si las escrituras continúan o fallan temporalmente;
+- qué errores informa el callback del productor.
 
-## Comparación y discusión
+Vuelve a describir el topic con el CLI:
 
-1. ¿Qué diferencia hay entre número de particiones y factor de replicación?
-2. ¿Qué indican líder, réplicas y ISR?
-3. ¿Qué cambia entre `acks=1` y `acks=all`?
-4. ¿Por qué `min.insync.replicas=2` puede hacer que una escritura falle si un nodo está caído?
-5. ¿Qué riesgo no se puede estudiar al ejecutar los tres nodos en la misma máquina?
-6. ¿Qué información facilita Kafbat frente al CLI?
+~~~bash
+kafka_2.13-3.9.1/bin/kafka-topics.sh --bootstrap-server localhost:19092,localhost:19093,localhost:19094 --describe --topic mediciones_aire_ha
+~~~
 
-## Parar y limpiar
+Con `min.insync.replicas=2` y `acks=all`, las escrituras requieren al menos dos réplicas sincronizadas. La caída de un nodo no implica que todas las operaciones vayan a fallar ni garantiza que todas vayan a continuar: el resultado depende del ISR, del líder y del estado del quórum. Observa la evidencia real.
 
-Docker Compose: `docker compose -f docker-compose.ha.yml down`. Añade `-v` solo si quieres eliminar también los volúmenes.
+No detengas dos nodos a la vez para esta actividad. Los tres procesos comparten la misma máquina; esta prueba no simula la pérdida de un host o de una zona de disponibilidad.
 
-Tres procesos locales: `./stop_kafka_ha.sh`. Los datos permanecen en `.kafka-ha/data`; no borres esos datos a menos que quieras reinicializar el clúster.
+## 6. Recuperar el clúster y comprobar la recuperación
+
+Como el nodo 2 se detuvo manualmente, detén de forma ordenada los procesos restantes y vuelve a iniciar el clúster:
+
+~~~bash
+./stop_kafka_ha.sh
+./setup_kafka_ha.sh
+~~~
+
+El script conserva los datos persistidos de los nodos y no debe reformatearlos cuando los archivos de metadatos existen. Espera a que el inicio termine antes de continuar.
+
+Vuelve a Kafbat y al CLI. Comprueba que los tres brokers están disponibles, que las réplicas vuelven a sincronizarse y que el ISR se recupera. Repite una producción breve y verifica la llegada de mensajes.
+
+## 7. Comparación y preguntas de discusión
+
+1. ¿Qué diferencia hay entre particiones y factor de replicación?
+2. ¿Qué significan líder, réplicas e ISR?
+3. ¿Qué diferencia observaste entre `acks=1` y `acks=all`?
+4. ¿Por qué una configuración con `min.insync.replicas=2` puede rechazar escrituras si el ISR baja de dos?
+5. ¿Qué ventaja ofrece Kafbat frente a consultar solo el CLI?
+6. ¿Qué cambia cuando un consumidor se suscribe a dos topics?
+7. ¿Por qué tres procesos en un único Codespace no equivalen a tres máquinas independientes?
+
+## 8. Detener servicios
+
+Detén primero la interfaz y después el clúster avanzado:
+
+~~~bash
+./stop_kafbat.sh
+./stop_kafka_ha.sh
+~~~
+
+Los datos avanzados permanecen en `.kafka-ha/data`; no borres ese directorio salvo que quieras reinicializar deliberadamente el clúster. La práctica básica conserva su propio estado en `.kafka/data` y no debe borrarse para limpiar la práctica avanzada.
