@@ -4,8 +4,8 @@ Laboratorio didáctico no calificable para explorar productores, consumidores, t
 
 ## Prácticas
 
-1. **[Práctica 1 — Básica](docs/practica-basica.md):** un broker KRaft, productor/consumidor, particiones, offsets y claves. No requiere Docker-in-Docker.
-2. **[Práctica 2 — Avanzada](docs/practica-avanzada.md):** tres brokers, replicación, Kafbat UI y prueba de tolerancia a fallos. Puede ejecutarse con Docker Compose en un host compatible o con tres procesos Kafka locales mediante setup_kafka_ha.sh.
+1. **[Práctica 1 — Básica](docs/practica-basica.md):** un broker KRaft, productor/consumidor, particiones, offsets y claves.
+2. **[Práctica 2 — Avanzada](docs/practica-avanzada.md):** tres nodos Kafka, replicación, Kafbat UI ejecutado sin Docker, multitópico y prueba de tolerancia a fallos.
 
 Guía general: [docs/guia-estudiantes.md](docs/guia-estudiantes.md).
 
@@ -44,7 +44,7 @@ También puedes usar .venv/bin/python producer_generated.py desde la raíz sin a
 
 - Una clave no selecciona directamente un número de partición; con asignación automática, Kafka la usa para calcular una partición. Para elegir un número exacto, selecciona asignación manual y confirma que esa partición exista.
 - Dos consumidores con el mismo group.id se reparten las particiones. No necesitas crear un archivo por consumidor: ejecuta el mismo script en dos terminales. Grupos distintos leen de forma independiente.
-- Docker-in-Docker no se habilita simplemente añadiendo una feature al devcontainer; depende de que Codespaces pueda construir y arrancar el contenedor con los permisos y capacidades necesarios. La ruta recomendada del laboratorio no depende de Docker-in-Docker.
+- La práctica avanzada se inicia con `./setup_kafka_ha.sh`; la interfaz visual se ejecuta con `./setup_kafbat.sh`. Ambas usan puertos y estado separados del broker básico.
 - Kafka no valida automáticamente los mensajes JSON contra un esquema. Schema Registry se explica como extensión conceptual; no está instalado en este laboratorio.
 
 ## Validación del código
@@ -53,7 +53,7 @@ También puedes usar .venv/bin/python producer_generated.py desde la raíz sin a
 cd frontend && npm ci && npm run build
 cd ..
 python -m compileall -q runtime
-bash -n setup_kafka.sh stop_kafka.sh diagnose_kafka.sh setup_kafka_ha.sh stop_kafka_ha.sh
+bash -n setup_kafka.sh stop_kafka.sh diagnose_kafka.sh setup_kafka_ha.sh stop_kafka_ha.sh setup_kafbat.sh stop_kafbat.sh
 ~~~
 
 Las comprobaciones de sintaxis no sustituyen la prueba de integración con un clúster Kafka real.
