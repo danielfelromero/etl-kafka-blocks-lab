@@ -37,11 +37,9 @@ export function registerPythonGenerators() {
   };
   pythonGenerator.forBlock["lab_event"] = (block) => {
     const raw = block.getFieldValue("JSON") || "{}";
-    try {
-      JSON.parse(raw);
-    } catch {
-      return ["raise ValueError(" + pyString("JSON inválido en el bloque Evento: corrige la sintaxis antes de publicar.") + ")", Order.ATOMIC];
-    }
+    // Keep the expression syntactically valid Python; json.loads raises a clear
+    // JSONDecodeError when students execute a malformed event instead of silently
+    // replacing it with an empty object.
     return ["json.loads(" + pyString(raw) + ")", Order.ATOMIC];
   };
 
