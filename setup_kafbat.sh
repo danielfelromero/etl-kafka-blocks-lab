@@ -60,7 +60,7 @@ echo "Iniciando Kafbat UI para Kafka en $BOOTSTRAP..."
 echo $! > "$PIDFILE"
 
 ready=false
-for attempt in $(seq 1 120); do
+for attempt in $(seq 1 300); do
   pid="$(cat "$PIDFILE")"
   if ! kill -0 "$pid" 2>/dev/null; then
     echo "Kafbat UI terminó durante el inicio. Últimas líneas del log:" >&2
@@ -76,7 +76,7 @@ for attempt in $(seq 1 120); do
 done
 
 if [[ "$ready" != true ]]; then
-  echo "Kafbat UI no estuvo listo en 240 segundos. Revisa $LOG." >&2
+  echo "Kafbat UI no estuvo listo en 600 segundos. Revisa $LOG." >&2
   tail -n 60 "$LOG" >&2 || true
   exit 1
 fi
