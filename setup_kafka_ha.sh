@@ -43,12 +43,17 @@ for id in 1 2 3; do
   config="$CONFIG_DIR/server-$id.properties"
   data="$DATA_DIR/node-$id"
   mkdir -p "$data"
+  case "$id" in
+    1) controller_port=19103; internal_port=19292; external_port=19092 ;;
+    2) controller_port=19104; internal_port=19293; external_port=19093 ;;
+    3) controller_port=19105; internal_port=19294; external_port=19094 ;;
+  esac
   cat > "$config" <<EOF
 process.roles=broker,controller
 node.id=$id
-controller.quorum.voters=1@localhost:19093,2@localhost:19095,3@localhost:19097
-listeners=CONTROLLER://localhost:$((19092 + id)),INTERNAL://localhost:$((19090 + id)),EXTERNAL://0.0.0.0:$((19091 + id))
-advertised.listeners=INTERNAL://localhost:$((19090 + id)),EXTERNAL://localhost:$((19091 + id))
+controller.quorum.voters=1@localhost:19103,2@localhost:19104,3@localhost:19105
+listeners=CONTROLLER://localhost:$controller_port,INTERNAL://localhost:$internal_port,EXTERNAL://0.0.0.0:$external_port
+advertised.listeners=INTERNAL://localhost:$internal_port,EXTERNAL://localhost:$external_port
 listener.security.protocol.map=CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
 controller.listener.names=CONTROLLER
 inter.broker.listener.name=INTERNAL
@@ -61,13 +66,6 @@ transaction.state.log.replication.factor=3
 transaction.state.log.min.isr=2
 group.initial.rebalance.delay.ms=0
 EOF
-  # Keep node ports easy to remember: external 19092-19094; controller 19093/19095/19097.
-  # Use distinct controller ports; each node's controller listener is rewritten below.
-  case "$id" in
-    1) sed -i.bak 's/CONTROLLER://localhost:19093/CONTROLLER://localhost:19093/' "$config" ;;
-    2) sed -i.bak 's/CONTROLLER://localhost:19094/CONTROLLER://localhost:19095/' "$config" ;;
-    3) sed -i.bak 's/CONTROLLER://localhost:19095/CONTROLLER://localhost:19097/' "$config" ;;
-  esac
   # Storage format is idempotent; never force a format over existing node data.
   if [[ ! -f "$data/meta.properties" ]]; then
     "$HOME_KAFKA/bin/kafka-storage.sh" format -t "$CLUSTER_ID" -c "$config"
