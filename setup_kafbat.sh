@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-VERSION="1.3.0"
+VERSION="v1.3.0"
 REPO_URL="https://github.com/kafbat/kafka-ui.git"
 ROOT="$(pwd -P)"
 STATE="$ROOT/.kafbat"
