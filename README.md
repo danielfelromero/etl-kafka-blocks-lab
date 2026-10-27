@@ -5,7 +5,14 @@ Laboratorio didáctico no calificable para explorar productores, consumidores, t
 ## Prácticas
 
 1. **[Práctica 1 — Básica](docs/practica-basica.md):** un broker KRaft, productor/consumidor, particiones, offsets y claves.
-2. **[Práctica 2 — Avanzada](docs/practica-avanzada.md):** tres nodos Kafka, replicación, Kafbat UI ejecutado sin Docker, multitópico y prueba de tolerancia a fallos.
+
+En caso de ser necesario, entre ambas prácticas se puede eliminar todo con el siguiente comando:
+
+~~~bash
+git clean -dxf && git reset --hard HEAD
+~~~
+  
+3. **[Práctica 2 — Avanzada](docs/practica-avanzada.md):** tres nodos Kafka, replicación, Kafbat UI ejecutado sin Docker, multitópico y prueba de tolerancia a fallos.
 
 Guía general: [docs/guia-estudiantes.md](docs/guia-estudiantes.md).
 
